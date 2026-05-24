@@ -1,0 +1,37 @@
+# 논술마루 LMS — Cursor 작업 규칙
+
+## 기술 스택
+- Next.js 14 App Router / TypeScript / Tailwind CSS
+- Supabase Auth + PostgreSQL + Storage
+- Vercel 배포
+
+## 절대 규칙 (위반 금지)
+- 기존 기능을 깨지 않는다
+- 전체 파일을 재작성하지 않는다
+- 한 번에 하나의 파일만 수정한다
+- 수정 전 영향받는 파일 목록을 먼저 알린다
+- DB 스키마를 임의로 변경하지 않는다 → docs/database_schema.md 참고
+- RLS 정책을 임의로 변경하거나 비활성화하지 않는다 → docs/rls_policy.md 참고
+- service_role key를 클라이언트 코드에 절대 사용하지 않는다
+- 학생 개인정보를 AI API로 전송하지 않는다
+
+## 코딩 규칙
+- 모든 DB 조회는 Server Component 또는 Server Action에서 처리
+- 클라이언트에서는 anon key만 사용
+- 주요 코드마다 한글 주석 필수
+- TypeScript any 사용 금지 (명시적 타입 선언)
+- 에러 발생 시 사용자에게 안내 문구 표시
+
+## 완료 기준
+- npm run build 통과
+- 역할별 테스트 계정으로 실제 동작 확인
+- RLS: 다른 역할의 데이터 노출 없음
+
+## 참고 문서
+- AGENTS.md: 전체 작업 규칙
+- docs/prd.md: 제품 기획 및 MVP 범위
+- docs/database_schema.md: DB 테이블 구조
+- docs/roles_permissions.md: 역할별 권한
+- docs/rls_policy.md: RLS 정책
+- docs/ui_flow.md: 화면 흐름 및 라우팅
+- docs/test_checklist.md: 테스트 체크리스트
