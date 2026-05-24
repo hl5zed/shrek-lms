@@ -9,5 +9,7 @@ build
 .env.production
 .env.development
 
+.cursor
+
 *.log
 .DS_Store
