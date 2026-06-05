@@ -13,3 +13,5 @@ build
 
 *.log
 .DS_Store
+# 백업 폴더
+_backup_shrek-lms/

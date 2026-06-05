@@ -18,19 +18,49 @@ export default function AuthPage() {
     setMessage("");
     setIsLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    setIsLoading(false);
-
     if (error) {
+      setIsLoading(false);
       setMessage(`로그인 실패: ${error.message}`);
       return;
     }
 
-    setMessage("로그인 성공! 대시보드로 이동합니다.");
+    // 로그인 성공 후 profiles 테이블에서 역할(role)을 조회해 해당 대시보드로 이동합니다.
+    // (roles_permissions.md 규칙: auth metadata 가 아니라 profiles.role 기준)
+    const userId = data.user?.id;
+    let role: string | null = null;
+
+    if (userId) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", userId)
+        .single();
+      role = profile?.role ?? null;
+    }
+
+    // 역할별 기본 대시보드 경로입니다.
+    const roleHome: Record<string, string> = {
+      admin: "/admin/dashboard",
+      teacher: "/teacher/dashboard",
+      student: "/student/dashboard",
+      parent: "/parent/dashboard",
+    };
+
+    setIsLoading(false);
+
+    if (role && roleHome[role]) {
+      setMessage("로그인 성공! 대시보드로 이동합니다.");
+      router.push(roleHome[role]);
+      return;
+    }
+
+    // 역할이 없거나 알 수 없는 경우: 임시 대시보드로 이동합니다.
+    setMessage("로그인 성공! (역할 미설정) 임시 대시보드로 이동합니다.");
     router.push("/dashboard");
   }
 

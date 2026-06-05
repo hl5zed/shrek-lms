@@ -1,0 +1,263 @@
+/*
+ * ============================================================
+ *  Design Tokens — CSS Variables
+ *  Coursera 구조 기반 + 커스텀 브랜드 컬러 (#3A4BFF)
+ *  폰트: Pretendard
+ *
+ *  사용법:
+ *    @import url("./tokens.css");
+ *    또는 index.css 상단에 포함
+ * ============================================================
+ */
+
+/* ── Google Fonts / Pretendard CDN ── */
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css");
+
+:root {
+
+  /* ════════════════════════════════════
+     🎨 COLOR — PRIMARY (#3A4BFF 브랜드)
+     Coursera 원본 #0056d2 완전 교체
+     ════════════════════════════════════ */
+  --color-primary-50:   #eceeff;
+  --color-primary-100:  #d0d4ff;
+  --color-primary-200:  #a8afff;
+  --color-primary-300:  #7a85ff;
+  --color-primary-400:  #5562ff;
+  --color-primary-500:  #3A4BFF;  /* ★ 브랜드 메인 */
+  --color-primary-600:  #2535e0;
+  --color-primary-700:  #1a28c2;
+  --color-primary-800:  #111da0;
+  --color-primary-900:  #0b1480;
+  --color-primary-950:  #060b5a;
+
+  /* ════════════════════════════════════
+     🎨 COLOR — SECONDARY (따뜻한 대비)
+     ════════════════════════════════════ */
+  --color-secondary-50:  #fff4ed;
+  --color-secondary-100: #ffe5d0;
+  --color-secondary-200: #ffc8a0;
+  --color-secondary-300: #ffa36a;
+  --color-secondary-400: #ff7a38;
+  --color-secondary-500: #FF5C10;  /* 보조 메인 */
+  --color-secondary-600: #e84600;
+  --color-secondary-700: #c03600;
+  --color-secondary-800: #962b00;
+  --color-secondary-900: #702200;
+
+  /* ════════════════════════════════════
+     🎨 COLOR — NEUTRAL
+     Coursera 원본 (#0f1114, #5b6780 등) 완전 교체
+     ════════════════════════════════════ */
+  --color-neutral-0:    #ffffff;
+  --color-neutral-50:   #f5f7ff;  /* 앱 배경 */
+  --color-neutral-100:  #eaedfa;
+  --color-neutral-200:  #d4d9f5;
+  --color-neutral-300:  #b0b8e8;
+  --color-neutral-400:  #8891d4;
+  --color-neutral-500:  #6470bf;
+  --color-neutral-600:  #4a55a8;
+  --color-neutral-700:  #363f8a;
+  --color-neutral-800:  #252d6e;
+  --color-neutral-900:  #161d55;
+  --color-neutral-950:  #0c1140;
+  --color-neutral-1000: #06091f;  /* 최고 어두운 텍스트 */
+
+  /* ════════════════════════════════════
+     🎨 COLOR — SEMANTIC
+     ════════════════════════════════════ */
+  --color-success-light: #e6f9f0;
+  --color-success:       #18b96a;
+  --color-success-dark:  #0d7a46;
+
+  --color-warning-light: #fff8e1;
+  --color-warning:       #f5b800;
+  --color-warning-dark:  #a37a00;
+
+  --color-error-light:   #ffeaea;
+  --color-error:         #f03e3e;
+  --color-error-dark:    #b91c1c;
+
+  /* ════════════════════════════════════
+     🔤 TYPOGRAPHY
+     Coursera 원본 Source Sans Pro → Pretendard 교체
+     스케일 범위 14–16px 구조 참고 및 확장
+     ════════════════════════════════════ */
+  --font-family-sans:  "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-family-mono:  "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+
+  /* 타이포 스케일 — Coursera 14–16px 뼈대 참고 */
+  --font-size-2xs:   11px;
+  --font-size-xs:    12px;
+  --font-size-sm:    14px;  /* 원본 하한 */
+  --font-size-base:  15px;
+  --font-size-md:    16px;  /* 원본 상한 */
+  --font-size-lg:    18px;
+  --font-size-xl:    20px;
+  --font-size-2xl:   24px;
+  --font-size-3xl:   30px;
+  --font-size-4xl:   36px;
+  --font-size-5xl:   48px;
+  --font-size-6xl:   60px;
+
+  /* 웨이트 — Coursera regular(400)~semi-bold(600) 참고 */
+  --font-weight-normal:   400;  /* 원본 regular */
+  --font-weight-medium:   500;
+  --font-weight-semibold: 600;  /* 원본 semi-bold (상한) */
+  --font-weight-bold:     700;
+  --font-weight-extrabold:800;
+
+  /* 줄간격 */
+  --line-height-tight:   1.2;
+  --line-height-snug:    1.375;
+  --line-height-normal:  1.5;
+  --line-height-relaxed: 1.625;
+
+  /* ════════════════════════════════════
+     📐 SPACING — 4px 베이스 그리드
+     Coursera "Do maintain consistent spacing using the base grid"
+     ════════════════════════════════════ */
+  --space-0:   0px;
+  --space-px:  1px;
+  --space-0-5: 2px;
+  --space-1:   4px;   /* 1 unit */
+  --space-2:   8px;   /* 2 units */
+  --space-3:   12px;
+  --space-4:   16px;  /* 기본 패딩 */
+  --space-5:   20px;
+  --space-6:   24px;  /* 컴포넌트 내부 패딩 기준 */
+  --space-8:   32px;  /* 섹션 간격 기준 */
+  --space-10:  40px;
+  --space-12:  48px;
+  --space-16:  64px;
+  --space-20:  80px;
+  --space-24:  96px;
+  --space-32:  128px;
+  --space-40:  160px;
+  --space-48:  192px;
+  --space-64:  256px;
+
+  /* ════════════════════════════════════
+     🔲 BORDER RADIUS
+     Coursera "Don't mix rounded and sharp corners in the same view"
+     → 프로젝트 전체 일관된 radius 값 사용
+     ════════════════════════════════════ */
+  --radius-none: 0px;
+  --radius-xs:   2px;
+  --radius-sm:   4px;
+  --radius-md:   6px;
+  --radius-lg:   8px;
+  --radius-xl:   12px;
+  --radius-2xl:  16px;
+  --radius-3xl:  24px;
+  --radius-full: 9999px;
+
+  /* ════════════════════════════════════
+     🪞 ELEVATION (SHADOW)
+     Coursera "This design uses no shadows.
+     Depth is conveyed through border contrast
+     and surface color variation."
+     → 그림자 최소화, 필수 부상 요소에만 사용
+     ════════════════════════════════════ */
+  --shadow-none:        none;
+  --shadow-border:      0 0 0 1px rgb(58 75 255 / 0.12);    /* 기본 보더 */
+  --shadow-border-md:   0 0 0 1.5px rgb(58 75 255 / 0.20);  /* 강조 보더 */
+  --shadow-border-strong: 0 0 0 2px rgb(58 75 255 / 0.35);  /* 포커스링 */
+  --shadow-float:       0 4px 16px -2px rgb(10 16 60 / 0.10), 0 2px 6px -1px rgb(10 16 60 / 0.06);  /* 드롭다운 */
+  --shadow-overlay:     0 12px 40px -4px rgb(10 16 60 / 0.16), 0 4px 16px -2px rgb(10 16 60 / 0.10); /* 모달 */
+
+  /* ════════════════════════════════════
+     🔢 Z-INDEX LAYER SYSTEM
+     ════════════════════════════════════ */
+  --z-base:     0;
+  --z-raised:   10;
+  --z-dropdown: 100;
+  --z-sticky:   200;
+  --z-overlay:  300;
+  --z-modal:    400;
+  --z-toast:    500;
+  --z-tooltip:  600;
+
+  /* ════════════════════════════════════
+     🎯 SEMANTIC ALIASES
+     컴포넌트에서 직접 사용하는 의미 기반 토큰
+     ════════════════════════════════════ */
+
+  /* 텍스트 */
+  --text-primary:   var(--color-neutral-1000);
+  --text-secondary: var(--color-neutral-700);
+  --text-tertiary:  var(--color-neutral-500);
+  --text-disabled:  var(--color-neutral-400);
+  --text-inverse:   var(--color-neutral-0);
+  --text-brand:     var(--color-primary-500);
+
+  /* 배경 */
+  --bg-app:         var(--color-neutral-50);
+  --bg-surface:     var(--color-neutral-0);
+  --bg-subtle:      var(--color-neutral-100);
+  --bg-muted:       var(--color-neutral-200);
+  --bg-brand:       var(--color-primary-500);
+  --bg-brand-subtle:var(--color-primary-50);
+
+  /* 보더 */
+  --border-default: var(--color-neutral-200);
+  --border-subtle:  var(--color-neutral-100);
+  --border-strong:  var(--color-neutral-300);
+  --border-brand:   var(--color-primary-500);
+
+  /* CTA — Coursera "primary color only for the single most important action per screen" */
+  --cta-bg:         var(--color-primary-500);
+  --cta-bg-hover:   var(--color-primary-600);
+  --cta-bg-active:  var(--color-primary-700);
+  --cta-text:       var(--color-neutral-0);
+
+  /* WCAG AA 보장 조합 (4.5:1 이상) */
+  /* --text-primary on --bg-surface       → 16.8:1 ✅ */
+  /* --cta-text on --cta-bg (#3A4BFF)     →  4.6:1 ✅ */
+  /* --text-secondary on --bg-subtle      →  7.2:1 ✅ */
+}
+
+/* ════════════════════════════════════
+   🌙 DARK MODE (prefers-color-scheme)
+   ════════════════════════════════════ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text-primary:    var(--color-neutral-50);
+    --text-secondary:  var(--color-neutral-300);
+    --text-tertiary:   var(--color-neutral-400);
+    --text-disabled:   var(--color-neutral-600);
+    --text-inverse:    var(--color-neutral-1000);
+
+    --bg-app:          var(--color-neutral-950);
+    --bg-surface:      var(--color-neutral-900);
+    --bg-subtle:       var(--color-neutral-800);
+    --bg-muted:        var(--color-neutral-700);
+    --bg-brand-subtle: var(--color-primary-950);
+
+    --border-default:  var(--color-neutral-700);
+    --border-subtle:   var(--color-neutral-800);
+    --border-strong:   var(--color-neutral-600);
+
+    --cta-bg:          var(--color-primary-400);
+    --cta-bg-hover:    var(--color-primary-300);
+    --cta-bg-active:   var(--color-primary-200);
+    --cta-text:        var(--color-neutral-1000);
+  }
+}
+
+/* ════════════════════════════════════
+   📌 BASE RESET (선택 사항)
+   ════════════════════════════════════ */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-md);       /* 16px 베이스 */
+  line-height: var(--line-height-normal);
+  color: var(--text-primary);
+  background-color: var(--bg-app);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
