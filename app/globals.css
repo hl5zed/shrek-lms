@@ -5,6 +5,33 @@
 :root {
   --background: var(--color-neutral-50);
   --foreground: var(--color-neutral-1000);
+  --lms-br: #3A4BFF;
+  --lms-br-h: #2535e0;
+  --lms-br-l: #eceeff;
+  --lms-br-2: #a8afff;
+  --lms-br-3: #d0d4ff;
+  --lms-sec: #FF5C10;
+  --lms-sec-l: #fff4ed;
+  --lms-ok: #18b96a;
+  --lms-ok-l: #e6f9f0;
+  --lms-ok-d: #0d7a46;
+  --lms-wa: #f5b800;
+  --lms-wa-l: #fff8e1;
+  --lms-wa-d: #a37a00;
+  --lms-er: #f03e3e;
+  --lms-er-l: #ffeaea;
+  --lms-er-d: #b91c1c;
+  --lms-tl: #1D9E75;
+  --lms-tl-l: #E1F5EE;
+  --lms-pu: #534AB7;
+  --lms-pu-l: #EEEDFE;
+  --lms-border: 1px solid var(--color-neutral-200);
+  --lms-r: 6px;
+  --lms-rl: 10px;
+  --lms-rx: 14px;
+  --lms-sidebar-w: 192px;
+  --lms-topbar-h: 48px;
+  --lms-content-p: 18px;
 }
 
 @theme inline {
@@ -27,4 +54,24 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-family-sans);
+}
+
+.lms-scrollbar::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.lms-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--color-neutral-300);
+  border-radius: var(--radius-full);
+}
+
+.lms-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.lms-shell-card {
+  border: var(--lms-border);
+  border-radius: var(--lms-rl);
+  background: var(--color-neutral-0);
 }

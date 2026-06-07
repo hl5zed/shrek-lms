@@ -1,0 +1,690 @@
+
+<style>
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css");
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --br:#3A4BFF;--br-h:#2535e0;--br-l:#eceeff;--br-2:#a8afff;--br-3:#d0d4ff;
+  --sec:#FF5C10;--sec-l:#fff4ed;
+  --ok:#18b96a;--ok-l:#e6f9f0;--ok-d:#0d7a46;
+  --wa:#f5b800;--wa-l:#fff8e1;--wa-d:#a37a00;
+  --er:#f03e3e;--er-l:#ffeaea;--er-d:#b91c1c;
+  --tl:#1D9E75;--tl-l:#E1F5EE;
+  --pu:#534AB7;--pu-l:#EEEDFE;
+  --n0:#fff;--n50:#f5f7ff;--n100:#eaedfa;--n200:#d4d9f5;--n300:#b0b8e8;--n400:#8891d4;--n500:#6470bf;--n600:#4a55a8;--n700:#363f8a;--n800:#252d6e;--n1000:#06091f;
+  --bd:1px solid var(--n200);
+  --r:6px;--rl:10px;--rx:14px;
+}
+body,div,span,p,button,input,select,label,textarea,th,td{font-family:"Pretendard Variable","Pretendard",-apple-system,sans-serif;}
+
+/* ── shell ── */
+.shell{display:flex;height:760px;border:var(--bd);border-radius:var(--rx);overflow:hidden;background:var(--n50);}
+
+/* ── sidebar ── */
+.sb{width:192px;background:var(--n0);border-right:var(--bd);display:flex;flex-direction:column;flex-shrink:0;}
+.sb-top{padding:14px 14px 12px;border-bottom:var(--bd);}
+.sb-brand{display:flex;align-items:center;gap:8px;}
+.sb-mark{width:28px;height:28px;background:var(--br);border-radius:var(--r);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;flex-shrink:0;}
+.sb-nm{font-size:13px;font-weight:700;color:var(--n1000);}
+.sb-sm{font-size:10px;color:var(--n400);margin-top:1px;}
+.sb-nav{flex:1;overflow-y:auto;padding:8px 0;}
+.sg{padding:0 8px;margin-bottom:2px;}
+.sl{font-size:9px;font-weight:700;color:var(--n400);letter-spacing:.08em;text-transform:uppercase;padding:6px 8px 3px;}
+.ni{display:flex;align-items:center;gap:7px;padding:6px 8px;border-radius:var(--r);cursor:pointer;font-size:12.5px;color:var(--n600);transition:background .1s;}
+.ni:hover{background:var(--n50);}
+.ni.on{background:var(--br-l);color:var(--br);font-weight:700;}
+.ni i{font-size:14px;width:14px;flex-shrink:0;}
+.nb{margin-left:auto;font-size:9px;font-weight:700;padding:1px 5px;border-radius:9999px;}
+.nb-er{background:var(--er);color:#fff;}
+.nb-wa{background:var(--wa);color:#6b4800;}
+.nb-br{background:var(--br);color:#fff;}
+.sb-bot{padding:10px 12px;border-top:var(--bd);}
+.ua{display:flex;align-items:center;gap:7px;}
+.av{width:26px;height:26px;border-radius:50%;background:var(--br-l);color:var(--br);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.un{font-size:11px;font-weight:700;color:var(--n1000);}
+.ur{font-size:10px;color:var(--n400);}
+
+/* ── main ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+.topbar{height:48px;background:var(--n0);border-bottom:var(--bd);display:flex;align-items:center;padding:0 18px;gap:10px;flex-shrink:0;}
+.tb-title{font-size:14px;font-weight:700;color:var(--n1000);flex:1;}
+.tb-search{display:flex;align-items:center;gap:5px;background:var(--n50);border:var(--bd);border-radius:var(--r);padding:5px 10px;font-size:11.5px;color:var(--n400);cursor:text;}
+.tb-search i{font-size:13px;}
+.ib{width:30px;height:30px;border-radius:var(--r);border:var(--bd);background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--n600);position:relative;}
+.ib .dot{position:absolute;top:5px;right:5px;width:5px;height:5px;background:var(--er);border-radius:50%;border:1.5px solid var(--n0);}
+.content{flex:1;overflow-y:auto;padding:18px;}
+.panel{display:none;}
+.panel.on{display:block;}
+
+/* ── atoms ── */
+.ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:8px;}
+.pt{font-size:16px;font-weight:700;color:var(--n1000);display:flex;align-items:center;gap:6px;}
+.ps{font-size:11px;color:var(--n400);margin-top:2px;}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:var(--r);font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .1s;}
+.bp{background:var(--br);color:#fff;}.bp:hover{background:var(--br-h);}
+.bg{background:transparent;color:var(--n700);border:var(--bd);}.bg:hover{background:var(--n50);}
+.bs{background:transparent;color:var(--tl);border:1px solid var(--tl);}.bs:hover{background:var(--tl-l);}
+.bo{background:transparent;color:var(--er);border:1px solid var(--er);}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:9999px;font-size:10px;font-weight:700;line-height:1.4;}
+.bok{background:var(--ok-l);color:var(--ok-d);}
+.bwa{background:var(--wa-l);color:var(--wa-d);}
+.ber{background:var(--er-l);color:var(--er-d);}
+.bbr{background:var(--br-l);color:var(--br);}
+.bpu{background:var(--pu-l);color:var(--pu);}
+.btl{background:var(--tl-l);color:var(--tl);}
+.bnn{background:var(--n100);color:var(--n700);}
+.bse{background:var(--sec-l);color:var(--sec);}
+.card{background:var(--n0);border:var(--bd);border-radius:var(--rl);padding:16px;}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.ct{font-size:12.5px;font-weight:700;color:var(--n1000);}
+.g2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;}
+.g4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px;}
+.sc{background:var(--n0);border:var(--bd);border-radius:var(--rl);padding:12px 14px;}
+.si{width:30px;height:30px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:15px;margin-bottom:8px;}
+.si-b{background:var(--br-l);color:var(--br);}
+.si-g{background:var(--ok-l);color:var(--ok);}
+.si-a{background:var(--wa-l);color:var(--wa);}
+.si-r{background:var(--er-l);color:var(--er);}
+.si-t{background:var(--tl-l);color:var(--tl);}
+.si-p{background:var(--pu-l);color:var(--pu);}
+.si-s{background:var(--sec-l);color:var(--sec);}
+.slb{font-size:10px;color:var(--n400);margin-bottom:3px;}
+.sv{font-size:20px;font-weight:700;color:var(--n1000);line-height:1.1;}
+.sd{font-size:10px;margin-top:3px;color:var(--ok);}
+.sd.dn{color:var(--er);}
+.tbl{width:100%;border-collapse:collapse;font-size:11.5px;table-layout:fixed;}
+.tbl th{text-align:left;font-size:9.5px;font-weight:700;color:var(--n400);text-transform:uppercase;letter-spacing:.05em;padding:0 10px 6px;border-bottom:var(--bd);white-space:nowrap;}
+.tbl td{padding:8px 10px;color:var(--n800);border-bottom:1px solid var(--n100);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:var(--n50);}
+.pbar{height:3px;background:var(--n100);border-radius:9999px;overflow:hidden;}
+.pf{height:100%;background:var(--br);border-radius:9999px;}
+.av-s{width:24px;height:24px;border-radius:50%;background:var(--br-l);color:var(--br);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.av-m{width:32px;height:32px;border-radius:50%;background:var(--br-l);color:var(--br);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.row-l{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--n100);}
+.row-l:last-child{border-bottom:none;}
+.tabs{display:flex;border-bottom:var(--bd);margin-bottom:14px;}
+.tab{padding:7px 12px;font-size:12px;font-weight:500;color:var(--n400);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;}
+.tab.on{color:var(--br);border-bottom-color:var(--br);font-weight:700;}
+.phase{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:9999px;font-size:10px;font-weight:700;background:var(--pu-l);color:var(--pu);}
+.divider{height:1px;background:var(--n100);margin:12px 0;}
+.info-row{display:flex;align-items:flex-start;gap:6px;font-size:11.5px;color:var(--n700);padding:4px 0;}
+.info-row i{font-size:13px;color:var(--n400);margin-top:1px;flex-shrink:0;}
+</style>
+
+<h2 class="sr-only">슈렉샘 논술 LMS — 전체 기능 통합 UI v3 (PRD 기반 11개 화면)</h2>
+
+<div class="shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sb">
+    <div class="sb-top">
+      <div class="sb-brand">
+        <div class="sb-mark">S</div>
+        <div><div class="sb-nm">슈렉샘 LMS</div><div class="sb-sm">논술 성장관리 플랫폼</div></div>
+      </div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="sg">
+        <div class="sl">운영 관리</div>
+        <div class="ni on" onclick="go('dash',this)"><i class="ti ti-layout-dashboard" aria-hidden="true"></i>대시보드</div>
+        <div class="ni" onclick="go('students',this)"><i class="ti ti-users" aria-hidden="true"></i>학생회원 관리<span class="nb nb-er">3</span></div>
+        <div class="ni" onclick="go('records',this)"><i class="ti ti-clipboard-text" aria-hidden="true"></i>수업기록<span class="nb nb-br">NEW</span></div>
+      </div>
+      <div class="sg">
+        <div class="sl">강의 콘텐츠</div>
+        <div class="ni" onclick="go('lessons',this)"><i class="ti ti-video" aria-hidden="true"></i>강의 관리<span class="nb nb-br">NEW</span></div>
+        <div class="ni" onclick="go('assignments',this)"><i class="ti ti-clipboard-list" aria-hidden="true"></i>과제 관리</div>
+        <div class="ni" onclick="go('submit',this)"><i class="ti ti-upload" aria-hidden="true"></i>과제 제출</div>
+      </div>
+      <div class="sg">
+        <div class="sl">첨삭 & 성장</div>
+        <div class="ni" onclick="go('feedback',this)"><i class="ti ti-pencil" aria-hidden="true"></i>첨삭 관리<span class="nb nb-wa">5</span></div>
+        <div class="ni" onclick="go('growth',this)"><i class="ti ti-chart-line" aria-hidden="true"></i>성장지표</div>
+        <div class="ni" onclick="go('portfolio',this)"><i class="ti ti-folder-open" aria-hidden="true"></i>포트폴리오</div>
+        <div class="ni" onclick="go('parent',this)"><i class="ti ti-heart" aria-hidden="true"></i>학부모 리포트</div>
+      </div>
+      <div class="sg">
+        <div class="sl">기타</div>
+        <div class="ni"><i class="ti ti-message-2" aria-hidden="true"></i>게시판</div>
+        <div class="ni"><i class="ti ti-settings" aria-hidden="true"></i>설정</div>
+      </div>
+    </nav>
+
+    <div class="sb-bot">
+      <div class="ua">
+        <div class="av">관</div>
+        <div><div class="un">관리자</div><div class="ur">최고관리자</div></div>
+        <i class="ti ti-logout" style="margin-left:auto;font-size:13px;color:var(--n400);cursor:pointer;" aria-hidden="true"></i>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="tb-title" id="tb-t">대시보드</div>
+      <div class="tb-search"><i class="ti ti-search" aria-hidden="true"></i>학생, 과제, 강의 검색...</div>
+      <div class="ib" aria-label="알림"><i class="ti ti-bell" aria-hidden="true"></i><span class="dot"></span></div>
+      <div class="ib" aria-label="내 계정"><i class="ti ti-user-circle" aria-hidden="true"></i></div>
+    </div>
+
+    <div class="content">
+
+      <!-- ① 대시보드 -->
+      <div id="p-dash" class="panel on">
+        <div class="ph">
+          <div><div class="pt">안녕하세요, 관리자님</div><div class="ps">오늘 수업 3건 · 첨삭 대기 5건 · 리포트 발행 대기 2건</div></div>
+          <button class="btn bp"><i class="ti ti-plus" aria-hidden="true"></i>학생 추가</button>
+        </div>
+
+        <div class="g4">
+          <div class="sc"><div class="si si-b"><i class="ti ti-users" aria-hidden="true"></i></div><div class="slb">전체 학생</div><div class="sv">142</div><div class="sd">↑ 이번달 +8명</div></div>
+          <div class="sc"><div class="si si-g"><i class="ti ti-clipboard-check" aria-hidden="true"></i></div><div class="slb">과제 제출률</div><div class="sv">87%</div><div class="sd">↑ 지난주 +3%</div></div>
+          <div class="sc"><div class="si si-a"><i class="ti ti-pencil" aria-hidden="true"></i></div><div class="slb">첨삭 대기</div><div class="sv">5</div><div class="sd dn">→ 긴급 2건</div></div>
+          <div class="sc"><div class="si si-t"><i class="ti ti-calendar-check" aria-hidden="true"></i></div><div class="slb">이번주 출석률</div><div class="sv">94%</div><div class="sd">38/40명</div></div>
+        </div>
+
+        <div class="g2" style="margin-bottom:12px;">
+          <div class="card">
+            <div class="ch"><span class="ct">관리 필요 학생</span><button class="btn bg" style="padding:3px 8px;font-size:11px;">전체보기</button></div>
+            <div class="row-l"><div class="av-s" style="background:var(--er-l);color:var(--er-d);">신</div><div style="flex:1;min-width:0;"><div style="font-size:12px;font-weight:600;color:var(--n1000);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">신동현</div><div style="font-size:10px;color:var(--n400);">결석 2회 · 제출률 40%</div></div><span class="badge ber">즉시 연락</span></div>
+            <div class="row-l"><div class="av-s" style="background:var(--wa-l);color:var(--wa-d);">박</div><div style="flex:1;min-width:0;"><div style="font-size:12px;font-weight:600;color:var(--n1000);">박지호</div><div style="font-size:10px;color:var(--n400);">지각 3회 · 미제출 1건</div></div><span class="badge bwa">주의</span></div>
+            <div class="row-l"><div class="av-s">오</div><div style="flex:1;min-width:0;"><div style="font-size:12px;font-weight:600;color:var(--n1000);">오하린</div><div style="font-size:10px;color:var(--n400);">성장 정체 — 3개월 유지</div></div><span class="badge bwa">점검 필요</span></div>
+          </div>
+          <div class="card">
+            <div class="ch"><span class="ct">오늘의 첨삭 대기</span><button class="btn bg" style="padding:3px 8px;font-size:11px;">첨삭 화면으로</button></div>
+            <div class="row-l"><div style="width:6px;height:6px;border-radius:50%;background:var(--er);flex-shrink:0;"></div><div style="flex:1;min-width:0;font-size:11.5px;color:var(--n800);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">신동현 · 6월 2주차 논술 (이미지)</div><div style="font-size:10px;color:var(--er);font-weight:700;flex-shrink:0;">52h</div></div>
+            <div class="row-l"><div style="width:6px;height:6px;border-radius:50%;background:var(--wa);flex-shrink:0;"></div><div style="flex:1;min-width:0;font-size:11.5px;color:var(--n800);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">오하린 · 독서감상문 (텍스트)</div><div style="font-size:10px;color:var(--wa);font-weight:700;flex-shrink:0;">28h</div></div>
+            <div class="row-l"><div style="width:6px;height:6px;border-radius:50%;background:var(--n300);flex-shrink:0;"></div><div style="flex:1;min-width:0;font-size:11.5px;color:var(--n800);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">강민서 · 시사논술 (PDF)</div><div style="font-size:10px;color:var(--n400);flex-shrink:0;">14h</div></div>
+            <div class="row-l"><div style="width:6px;height:6px;border-radius:50%;background:var(--n300);flex-shrink:0;"></div><div style="flex:1;min-width:0;font-size:11.5px;color:var(--n800);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">박지호 · 경제논술 (텍스트)</div><div style="font-size:10px;color:var(--n400);flex-shrink:0;">8h</div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="ch"><span class="ct">이번주 수업 일정</span><span style="font-size:10px;color:var(--n400);">2026년 6월 2주차</span></div>
+          <div style="display:flex;gap:8px;">
+            <div style="flex:1;padding:10px;background:var(--br-l);border-radius:var(--r);border:1px solid var(--br-3);">
+              <div style="font-size:10px;font-weight:700;color:var(--br);margin-bottom:3px;">월 · 화</div>
+              <div style="font-size:12px;font-weight:600;color:var(--n1000);">중등 논술 기초 A반</div>
+              <div style="font-size:10px;color:var(--n500);">박선생님 · 오후 3시</div>
+              <div style="display:flex;gap:4px;margin-top:6px;"><span class="badge bok">출석 8</span><span class="badge bnn">미확인 2</span></div>
+            </div>
+            <div style="flex:1;padding:10px;background:var(--ok-l);border-radius:var(--r);border:1px solid #9FE1CB;">
+              <div style="font-size:10px;font-weight:700;color:var(--ok);margin-bottom:3px;">수 · 목</div>
+              <div style="font-size:12px;font-weight:600;color:var(--n1000);">고등 심화 논술 B반</div>
+              <div style="font-size:10px;color:var(--n500);">김선생님 · 오후 4시</div>
+              <div style="display:flex;gap:4px;margin-top:6px;"><span class="badge bok">출석 12</span><span class="badge bwa">결석 1</span></div>
+            </div>
+            <div style="flex:1;padding:10px;background:var(--wa-l);border-radius:var(--r);border:1px solid #FAC775;">
+              <div style="font-size:10px;font-weight:700;color:var(--wa);margin-bottom:3px;">토</div>
+              <div style="font-size:12px;font-weight:600;color:var(--n1000);">수능 논술 특강 C반</div>
+              <div style="font-size:10px;color:var(--n500);">이선생님 · 오전 10시</div>
+              <div style="display:flex;gap:4px;margin-top:6px;"><span class="badge bnn">예정 12</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ② 학생회원 관리 -->
+      <div id="p-students" class="panel">
+        <div class="ph">
+          <div><div class="pt">학생회원 관리</div><div class="ps">총 142명 등록 · 수강중 128명 · 휴강 9명 · 대기 5명</div></div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn bg"><i class="ti ti-download" aria-hidden="true"></i>내보내기</button>
+            <button class="btn bp"><i class="ti ti-user-plus" aria-hidden="true"></i>학생 추가</button>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;">
+          <input style="border:var(--bd);background:var(--n0);border-radius:var(--r);padding:5px 9px;font-size:11.5px;width:136px;color:var(--n1000);" placeholder="이름·학교·연락처 검색">
+          <select style="border:var(--bd);background:var(--n0);border-radius:var(--r);padding:5px 9px;font-size:11.5px;color:var(--n700);font-family:inherit;"><option>전체 학년</option><option>중1</option><option>중2</option><option>중3</option><option>고1</option><option>고2</option><option>고3</option></select>
+          <select style="border:var(--bd);background:var(--n0);border-radius:var(--r);padding:5px 9px;font-size:11.5px;color:var(--n700);font-family:inherit;"><option>전체 반</option><option>중등 기초 A반</option><option>고등 심화 B반</option><option>수능 특강 C반</option><option>1:1 첨삭반</option></select>
+          <select style="border:var(--bd);background:var(--n0);border-radius:var(--r);padding:5px 9px;font-size:11.5px;color:var(--n700);font-family:inherit;"><option>전체 상태</option><option>수강중</option><option>휴강</option><option>수료</option><option>대기</option></select>
+          <select style="border:var(--bd);background:var(--n0);border-radius:var(--r);padding:5px 9px;font-size:11.5px;color:var(--n700);font-family:inherit;"><option>전체 강사</option><option>박선생님</option><option>김선생님</option><option>이선생님</option></select>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden;">
+          <table class="tbl">
+            <thead><tr>
+              <th style="width:32px;padding-left:12px;"><input type="checkbox" style="width:12px;height:12px;"></th>
+              <th style="width:130px;">학생</th><th style="width:72px;">학년/반</th><th style="width:60px;">담당강사</th>
+              <th style="width:76px;">과제 제출률</th><th style="width:60px;">출석</th><th style="width:70px;">최근 첨삭</th>
+              <th style="width:64px;">수강 상태</th><th style="width:52px;"></th>
+            </tr></thead>
+            <tbody>
+              <tr><td style="padding-left:12px;"><input type="checkbox" style="width:12px;height:12px;"></td><td><span style="display:flex;align-items:center;gap:6px;"><div class="av-s">김</div><div><div style="font-size:12px;font-weight:600;color:var(--n1000);">김민준</div><div style="font-size:10px;color:var(--n400);">중3</div></div></span></td><td style="font-size:11px;">중등 A반</td><td style="font-size:11px;">박선생님</td><td><div style="display:flex;align-items:center;gap:5px;"><div class="pbar" style="width:50px;"><div class="pf" style="width:90%;"></div></div><span style="font-size:10px;color:var(--n700);">90%</span></div></td><td><span class="badge bok">출석</span></td><td style="font-size:10px;color:var(--n400);">3일 전</td><td><span class="badge bok">수강중</span></td><td><button class="btn bg" style="padding:2px 7px;font-size:10px;">상세</button></td></tr>
+              <tr><td style="padding-left:12px;"><input type="checkbox" style="width:12px;height:12px;"></td><td><span style="display:flex;align-items:center;gap:6px;"><div class="av-s" style="background:var(--n100);color:var(--n600);">이</div><div><div style="font-size:12px;font-weight:600;color:var(--n1000);">이서윤</div><div style="font-size:10px;color:var(--n400);">고1</div></div></span></td><td style="font-size:11px;">고등 B반</td><td style="font-size:11px;">김선생님</td><td><div style="display:flex;align-items:center;gap:5px;"><div class="pbar" style="width:50px;"><div class="pf" style="width:75%;"></div></div><span style="font-size:10px;color:var(--n700);">75%</span></div></td><td><span class="badge bok">출석</span></td><td style="font-size:10px;color:var(--n400);">1일 전</td><td><span class="badge bok">수강중</span></td><td><button class="btn bg" style="padding:2px 7px;font-size:10px;">상세</button></td></tr>
+              <tr><td style="padding-left:12px;"><input type="checkbox" style="width:12px;height:12px;"></td><td><span style="display:flex;align-items:center;gap:6px;"><div class="av-s">박</div><div><div style="font-size:12px;font-weight:600;color:var(--n1000);">박지호</div><div style="font-size:10px;color:var(--n400);">중2</div></div></span></td><td style="font-size:11px;">중등 A반</td><td style="font-size:11px;">박선생님</td><td><div style="display:flex;align-items:center;gap:5px;"><div class="pbar" style="width:50px;"><div class="pf" style="width:60%;background:var(--wa);"></div></div><span style="font-size:10px;color:var(--n700);">60%</span></div></td><td><span class="badge bwa">지각</span></td><td style="font-size:10px;color:var(--n400);">5일 전</td><td><span class="badge bwa">주의</span></td><td><button class="btn bg" style="padding:2px 7px;font-size:10px;">상세</button></td></tr>
+              <tr><td style="padding-left:12px;"><input type="checkbox" style="width:12px;height:12px;"></td><td><span style="display:flex;align-items:center;gap:6px;"><div class="av-s" style="background:var(--er-l);color:var(--er-d);">신</div><div><div style="font-size:12px;font-weight:600;color:var(--n1000);">신동현</div><div style="font-size:10px;color:var(--n400);">고3</div></div></span></td><td style="font-size:11px;">수능 C반</td><td style="font-size:11px;">이선생님</td><td><div style="display:flex;align-items:center;gap:5px;"><div class="pbar" style="width:50px;"><div class="pf" style="width:40%;background:var(--er);"></div></div><span style="font-size:10px;color:var(--er);">40%</span></div></td><td><span class="badge ber">결석</span></td><td style="font-size:10px;color:var(--er);">7일 전</td><td><span class="badge ber">주의필요</span></td><td><button class="btn bg" style="padding:2px 7px;font-size:10px;">상세</button></td></tr>
+              <tr><td style="padding-left:12px;"><input type="checkbox" style="width:12px;height:12px;"></td><td><span style="display:flex;align-items:center;gap:6px;"><div class="av-s" style="background:var(--n100);color:var(--n600);">최</div><div><div style="font-size:12px;font-weight:600;color:var(--n1000);">최예린</div><div style="font-size:10px;color:var(--n400);">고2</div></div></span></td><td style="font-size:11px;">고등 B반</td><td style="font-size:11px;">김선생님</td><td><div style="display:flex;align-items:center;gap:5px;"><div class="pbar" style="width:50px;"><div class="pf" style="width:95%;"></div></div><span style="font-size:10px;color:var(--n700);">95%</span></div></td><td><span class="badge bok">출석</span></td><td style="font-size:10px;color:var(--n400);">오늘</td><td><span class="badge bok">수강중</span></td><td><button class="btn bg" style="padding:2px 7px;font-size:10px;">상세</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ③ 수업기록 -->
+      <div id="p-records" class="panel">
+        <div class="ph">
+          <div><div class="pt">수업기록 관리 <span class="phase"><i class="ti ti-sparkles" aria-hidden="true" style="font-size:11px;"></i>신규</span></div><div class="ps">회차별 수업 내용 · 출석 · 수업 집중도 · 참여 기록</div></div>
+          <button class="btn bp"><i class="ti ti-plus" aria-hidden="true"></i>수업기록 추가</button>
+        </div>
+        <div class="g4">
+          <div class="sc"><div class="si si-g"><i class="ti ti-calendar-check" aria-hidden="true"></i></div><div class="slb">이번주 출석률</div><div class="sv">94%</div><div class="sd">38/40명</div></div>
+          <div class="sc"><div class="si si-a"><i class="ti ti-clock" aria-hidden="true"></i></div><div class="slb">지각</div><div class="sv">2</div><div class="sd dn">주의 필요</div></div>
+          <div class="sc"><div class="si si-r"><i class="ti ti-user-x" aria-hidden="true"></i></div><div class="slb">결석</div><div class="sv">0</div><div class="sd">이번주 없음</div></div>
+          <div class="sc"><div class="si si-p"><i class="ti ti-chart-bar" aria-hidden="true"></i></div><div class="slb">평균 집중도</div><div class="sv">4.2<span style="font-size:12px;font-weight:400;">/5</span></div><div class="sd">↑ 지난주 +0.3</div></div>
+        </div>
+        <div class="card">
+          <div class="ch">
+            <span class="ct">6월 2주차 — 중등 기초 A반 수업기록</span>
+            <div style="display:flex;gap:6px;">
+              <button class="btn bg" style="padding:3px 8px;font-size:11px;"><i class="ti ti-printer" aria-hidden="true"></i>출력</button>
+              <button class="btn bg" style="padding:3px 8px;font-size:11px;"><i class="ti ti-edit" aria-hidden="true"></i>수정</button>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;font-size:11.5px;">
+            <div class="info-row"><i class="ti ti-calendar" aria-hidden="true"></i><span><b style="color:var(--n800);">수업일</b>&nbsp;2026년 6월 9일 (화)</span></div>
+            <div class="info-row"><i class="ti ti-book" aria-hidden="true"></i><span><b style="color:var(--n800);">수업명</b>&nbsp;주장과 근거 세우기</span></div>
+            <div class="info-row"><i class="ti ti-target" aria-hidden="true"></i><span><b style="color:var(--n800);">수업 목표</b>&nbsp;논제에 맞는 중심 주장을 세울 수 있다</span></div>
+            <div class="info-row"><i class="ti ti-file-text" aria-hidden="true"></i><span><b style="color:var(--n800);">과제</b>&nbsp;800자 논술문 작성</span></div>
+          </div>
+          <div class="divider"></div>
+          <table class="tbl">
+            <thead><tr><th>학생</th><th>출석</th><th>집중도</th><th>이해도</th><th>발표 참여</th><th>과제</th><th>개별 관찰 메모</th></tr></thead>
+            <tbody>
+              <tr><td><span style="display:flex;align-items:center;gap:5px;"><div class="av-s">김</div>김민준</span></td><td><span class="badge bok">출석</span></td><td><span style="color:var(--ok);font-weight:700;font-size:11px;">★★★★★</span></td><td><span style="color:var(--ok);font-size:11px;">높음</span></td><td><span style="font-size:11px;color:var(--br);">적극</span></td><td><span class="badge bok">제출</span></td><td style="font-size:10.5px;color:var(--n500);">발표 자신감 향상, 사례 제시 구체적</td></tr>
+              <tr><td><span style="display:flex;align-items:center;gap:5px;"><div class="av-s" style="background:var(--n100);color:var(--n600);">이</div>이서윤</span></td><td><span class="badge bok">출석</span></td><td><span style="color:var(--br);font-weight:700;font-size:11px;">★★★★☆</span></td><td><span style="color:var(--br);font-size:11px;">높음</span></td><td><span style="font-size:11px;color:var(--n500);">보통</span></td><td><span class="badge bok">제출</span></td><td style="font-size:10.5px;color:var(--n500);">논리 전개 안정적, 표현력 보완 필요</td></tr>
+              <tr><td><span style="display:flex;align-items:center;gap:5px;"><div class="av-s">박</div>박지호</span></td><td><span class="badge bwa">지각 15분</span></td><td><span style="color:var(--wa);font-weight:700;font-size:11px;">★★★☆☆</span></td><td><span style="color:var(--wa);font-size:11px;">보통</span></td><td><span style="font-size:11px;color:var(--n400);">소극</span></td><td><span class="badge bwa">미제출</span></td><td style="font-size:10.5px;color:var(--er);">지각으로 도입부 미참여, 학부모 연락 필요</td></tr>
+              <tr><td><span style="display:flex;align-items:center;gap:5px;"><div class="av-s" style="background:var(--n100);color:var(--n600);">최</div>최예린</span></td><td><span class="badge bok">출석</span></td><td><span style="color:var(--ok);font-weight:700;font-size:11px;">★★★★★</span></td><td><span style="color:var(--ok);font-size:11px;">높음</span></td><td><span style="font-size:11px;color:var(--br);">적극</span></td><td><span class="badge bok">제출</span></td><td style="font-size:10.5px;color:var(--n500);">질문 2건, 토론 주도적 참여</td></tr>
+            </tbody>
+          </table>
+          <div style="margin-top:10px;padding:10px 12px;background:var(--n50);border-radius:var(--r);border-left:3px solid var(--br);border-radius:0 var(--r) var(--r) 0;">
+            <div style="font-size:10px;font-weight:700;color:var(--n500);margin-bottom:3px;">강사 전체 메모</div>
+            <div style="font-size:11.5px;color:var(--n800);line-height:1.6;">전체적으로 근거 제시가 약함. 다음 수업에서 구체적 사례 찾기 훈련 집중 필요. 박지호 학부모 연락 요망.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ④ 강의 관리 -->
+      <div id="p-lessons" class="panel">
+        <div class="ph">
+          <div><div class="pt">강의 콘텐츠 관리 <span class="phase"><i class="ti ti-sparkles" aria-hidden="true" style="font-size:11px;"></i>신규</span></div><div class="ps">영상 · 음성 · PDF · 수업자료 업로드 및 스트리밍 권한 관리</div></div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn bg"><i class="ti ti-settings" aria-hidden="true"></i>스트리밍 설정</button>
+            <button class="btn bp"><i class="ti ti-upload" aria-hidden="true"></i>콘텐츠 업로드</button>
+          </div>
+        </div>
+        <div class="tabs" id="lt">
+          <div class="tab on" onclick="tabSwitch('lt',this)">전체</div>
+          <div class="tab" onclick="tabSwitch('lt',this)">영상</div>
+          <div class="tab" onclick="tabSwitch('lt',this)">음성</div>
+          <div class="tab" onclick="tabSwitch('lt',this)">PDF/자료</div>
+        </div>
+        <div class="g3" style="margin-bottom:12px;">
+          <div class="card" style="cursor:pointer;">
+            <div style="height:72px;background:var(--br-l);border-radius:var(--r);margin:-4px -4px 10px;display:flex;align-items:center;justify-content:center;position:relative;">
+              <i class="ti ti-player-play" style="font-size:26px;color:var(--br);" aria-hidden="true"></i>
+              <span style="position:absolute;bottom:6px;right:8px;font-size:10px;color:var(--br);font-weight:700;background:var(--n0);padding:1px 5px;border-radius:3px;">34:20</span>
+              <span style="position:absolute;top:6px;left:6px;" class="badge bbr">Vimeo</span>
+            </div>
+            <div style="font-size:12.5px;font-weight:700;color:var(--n1000);margin-bottom:2px;">1강 — 논술 기초 이해</div>
+            <div style="font-size:10.5px;color:var(--n400);margin-bottom:8px;">중등 논술 기초 · 영상</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;"><span class="badge bok">공개</span><span style="font-size:10px;color:var(--n400);">수강 24명</span></div>
+            <div class="pbar"><div class="pf" style="width:78%"></div></div>
+            <div style="font-size:10px;color:var(--n400);margin-top:3px;">평균 시청률 78%</div>
+          </div>
+          <div class="card" style="cursor:pointer;">
+            <div style="height:72px;background:var(--ok-l);border-radius:var(--r);margin:-4px -4px 10px;display:flex;align-items:center;justify-content:center;position:relative;">
+              <i class="ti ti-microphone" style="font-size:26px;color:var(--ok);" aria-hidden="true"></i>
+              <span style="position:absolute;bottom:6px;right:8px;font-size:10px;color:var(--ok);font-weight:700;background:var(--n0);padding:1px 5px;border-radius:3px;">12:05</span>
+              <span style="position:absolute;top:6px;left:6px;" class="badge btl">음성</span>
+            </div>
+            <div style="font-size:12.5px;font-weight:700;color:var(--n1000);margin-bottom:2px;">2강 — 문단 구조 음성 해설</div>
+            <div style="font-size:10.5px;color:var(--n400);margin-bottom:8px;">중등 논술 기초 · 음성</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;"><span class="badge bok">공개</span><span style="font-size:10px;color:var(--n400);">수강 18명</span></div>
+            <div class="pbar"><div class="pf" style="width:62%;background:var(--ok);"></div></div>
+            <div style="font-size:10px;color:var(--n400);margin-top:3px;">평균 청취율 62%</div>
+          </div>
+          <div class="card" style="cursor:pointer;">
+            <div style="height:72px;background:var(--er-l);border-radius:var(--r);margin:-4px -4px 10px;display:flex;align-items:center;justify-content:center;">
+              <i class="ti ti-file-type-pdf" style="font-size:26px;color:var(--er);" aria-hidden="true"></i>
+            </div>
+            <div style="font-size:12.5px;font-weight:700;color:var(--n1000);margin-bottom:2px;">3강 — 수업 프린트 자료</div>
+            <div style="font-size:10.5px;color:var(--n400);margin-bottom:8px;">중등 논술 기초 · PDF</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;"><span class="badge bok">공개</span><span style="font-size:10px;color:var(--n400);">다운 31회</span></div>
+            <div style="display:flex;gap:5px;margin-top:4px;">
+              <button class="btn bg" style="flex:1;padding:4px;font-size:10.5px;justify-content:center;"><i class="ti ti-eye" aria-hidden="true"></i>열람</button>
+              <button class="btn bg" style="flex:1;padding:4px;font-size:10.5px;justify-content:center;"><i class="ti ti-download" aria-hidden="true"></i>다운</button>
+            </div>
+          </div>
+        </div>
+        <div style="padding:9px 12px;background:var(--pu-l);border-radius:var(--r);font-size:11px;color:var(--pu);display:flex;align-items:center;gap:6px;">
+          <i class="ti ti-shield-lock" aria-hidden="true" style="font-size:13px;flex-shrink:0;"></i>
+          모든 콘텐츠는 비공개 버킷(lesson-materials) 저장 · signed URL 10분 만료 · 로그인 수강 권한 확인 후 재생 · public URL 직접 접근 차단
+        </div>
+      </div>
+
+      <!-- ⑤ 과제 관리 -->
+      <div id="p-assignments" class="panel">
+        <div class="ph">
+          <div><div class="pt">과제 관리</div><div class="ps">전체 28건 · 마감 임박 4건 · 이번주 평균 제출률 87%</div></div>
+          <button class="btn bp"><i class="ti ti-plus" aria-hidden="true"></i>과제 등록</button>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden;">
+          <table class="tbl">
+            <thead><tr><th style="width:150px;padding-left:12px;">과제명</th><th style="width:80px;">유형</th><th style="width:70px;">대상</th><th style="width:50px;">마감</th><th style="width:90px;">제출 현황</th><th style="width:70px;">AI 분석</th><th style="width:64px;">상태</th><th style="width:48px;"></th></tr></thead>
+            <tbody>
+              <tr><td style="font-weight:600;padding-left:12px;">6월 2주차 시사 논술</td><td><span class="badge bbr">텍스트</span></td><td style="font-size:11px;">A,B반</td><td style="color:var(--er);font-weight:700;font-size:11px;">D-1</td><td><div style="display:flex;align-items:center;gap:5px;"><div class="pbar" style="width:52px;"><div class="pf" style="width:78%;"></div></div><span style="font-size:10px;">18/23</span></div></td><td><span class="badge bok">완료</span></td><td><span class="badge ber">마감임박</span></td><td><button class="btn bg" style="padding:2px 7px;font-size:10px;">보기</button></td></tr>
+              <tr><td style="font-weight:600;padding-left:12px;">독서감상문 — 채식주의자</td><td><span class="badge bnn">파일+텍스트</span></td><td style="font-size:11px;">C반</td><td style="font-size:11px;">D-3</td><td><div style="display:flex;align-items:center;gap:5px;"><div class="pbar" style="width:52px;"><div class="pf" style="width:60%;"></div></div><span style="font-size:10px;">9/15</span></div></td><td><span class="badge bwa">대기</span></td><td><span class="badge bwa">진행중</span></td><td><button class="btn bg" style="padding:2px 7px;font-size:10px;">보기</button></td></tr>
+              <tr><td style="font-weight:600;padding-left:12px;">경제논술 — 원고지 제출</td><td><span class="badge bse">이미지/PDF</span></td><td style="font-size:11px;">B반</td><td style="font-size:11px;">D-7</td><td><div style="display:flex;align-items:center;gap:5px;"><div class="pbar" style="width:52px;"><div class="pf" style="width:28%;"></div></div><span style="font-size:10px;">5/18</span></div></td><td><span class="badge bnn">미실행</span></td><td><span class="badge bnn">진행중</span></td><td><button class="btn bg" style="padding:2px 7px;font-size:10px;">보기</button></td></tr>
+              <tr><td style="font-weight:600;padding-left:12px;">5월 종합 논술 평가</td><td><span class="badge bbr">텍스트</span></td><td style="font-size:11px;">전체</td><td style="font-size:11px;color:var(--n400);">완료</td><td><div style="display:flex;align-items:center;gap:5px;"><div class="pbar" style="width:52px;"><div class="pf" style="width:100%;"></div></div><span style="font-size:10px;">42/42</span></div></td><td><span class="badge bok">완료</span></td><td><span class="badge bok">완료</span></td><td><button class="btn bg" style="padding:2px 7px;font-size:10px;">보기</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ⑥ 과제 제출 (학생 뷰) -->
+      <div id="p-submit" class="panel">
+        <div class="ph">
+          <div><div class="pt">과제 제출</div><div class="ps">6월 2주차 시사 논술 · 마감 <span style="color:var(--er);font-weight:700;">D-1</span> · 800–1,200자</div></div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn bg"><i class="ti ti-device-floppy" aria-hidden="true"></i>임시저장</button>
+            <button class="btn bp"><i class="ti ti-send" aria-hidden="true"></i>최종 제출</button>
+          </div>
+        </div>
+        <div class="g2">
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div class="card" style="padding:12px;">
+              <div class="ch" style="margin-bottom:8px;"><span class="ct">과제 안내</span></div>
+              <div style="font-size:11.5px;color:var(--n800);line-height:1.7;background:var(--n50);padding:10px;border-radius:var(--r);">다음 논제에 대해 자신의 주장과 근거를 논리적으로 전개하세요.<br><b>논제:</b> 인공지능 기술의 발전이 직업 시장에 미치는 영향에 대해 논하시오.</div>
+              <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
+                <span class="badge bbr">텍스트 직접 작성</span>
+                <span class="badge bse">이미지/PDF 업로드</span>
+                <span class="badge bnn">파일 업로드</span>
+              </div>
+            </div>
+            <div class="card" style="padding:12px;">
+              <div class="ch" style="margin-bottom:8px;"><span class="ct">파일 업로드</span><span style="font-size:10px;color:var(--n400);">JPG · PNG · PDF · DOCX · 최대 100MB</span></div>
+              <div style="border:1.5px dashed var(--n300);border-radius:var(--r);padding:16px;text-align:center;cursor:pointer;background:var(--n50);">
+                <i class="ti ti-cloud-upload" style="font-size:22px;color:var(--n300);" aria-hidden="true"></i>
+                <div style="font-size:11.5px;color:var(--n400);margin-top:6px;">파일을 드래그하거나 클릭하여 업로드</div>
+                <div style="font-size:10px;color:var(--n300);margin-top:2px;">손글씨 원고지 사진도 첨부 가능</div>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="padding:12px;display:flex;flex-direction:column;">
+            <div class="ch" style="margin-bottom:6px;">
+              <span class="ct">원고 작성</span>
+              <span id="char-count" style="font-size:11px;font-weight:700;color:var(--br);">0 / 1,200자</span>
+            </div>
+            <textarea id="essay-area" oninput="countChars()" style="flex:1;min-height:280px;border:var(--bd);border-radius:var(--r);padding:10px;font-size:12px;font-family:inherit;color:var(--n1000);resize:none;line-height:1.8;" placeholder="여기에 논술문을 작성하세요. 주장을 먼저 쓰고, 근거를 구체적인 사례와 함께 전개해 보세요..."></textarea>
+            <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:10.5px;color:var(--n400);">
+              <span>최소 800자 이상 작성</span>
+              <span id="char-msg" style="color:var(--n400);">기준 미달</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ⑦ 첨삭 관리 -->
+      <div id="p-feedback" class="panel">
+        <div class="ph">
+          <div><div class="pt">첨삭 관리</div><div class="ps">대기 5건 · 긴급 2건 · AI 분석 완료 3건</div></div>
+          <span class="badge ber" style="font-size:11px;padding:4px 10px;">긴급 2건</span>
+        </div>
+        <div style="display:grid;grid-template-columns:168px 1fr;gap:12px;height:500px;">
+          <div style="display:flex;flex-direction:column;gap:6px;overflow-y:auto;">
+            <div style="font-size:10px;font-weight:700;color:var(--n400);padding:0 2px 4px;text-transform:uppercase;letter-spacing:.06em;">대기 목록</div>
+            <div style="padding:9px;border:2px solid var(--br);border-radius:var(--r);background:var(--br-l);cursor:pointer;">
+              <div style="font-size:12px;font-weight:700;color:var(--n1000);">신동현</div>
+              <div style="font-size:10px;color:var(--n500);margin-top:1px;">6월 2주차 · 이미지(손글씨)</div>
+              <div style="display:flex;gap:4px;margin-top:5px;"><span class="badge ber">긴급 52h</span></div>
+            </div>
+            <div style="padding:9px;border:var(--bd);border-radius:var(--r);cursor:pointer;background:var(--n0);">
+              <div style="font-size:12px;font-weight:700;color:var(--n1000);">오하린</div>
+              <div style="font-size:10px;color:var(--n500);margin-top:1px;">독서감상문 · 텍스트</div>
+              <div style="display:flex;gap:4px;margin-top:5px;"><span class="badge bwa">28h</span><span class="badge bok">AI 완료</span></div>
+            </div>
+            <div style="padding:9px;border:var(--bd);border-radius:var(--r);cursor:pointer;background:var(--n0);">
+              <div style="font-size:12px;font-weight:700;color:var(--n1000);">강민서</div>
+              <div style="font-size:10px;color:var(--n500);margin-top:1px;">시사논술 · PDF</div>
+              <div style="display:flex;gap:4px;margin-top:5px;"><span class="badge bnn">14h</span><span class="badge bok">AI 완료</span></div>
+            </div>
+            <div style="padding:9px;border:var(--bd);border-radius:var(--r);cursor:pointer;background:var(--n0);">
+              <div style="font-size:12px;font-weight:700;color:var(--n1000);">박지호</div>
+              <div style="font-size:10px;color:var(--n500);margin-top:1px;">경제논술 · 텍스트</div>
+              <div style="display:flex;gap:4px;margin-top:5px;"><span class="badge bnn">8h</span></div>
+            </div>
+          </div>
+
+          <div class="card" style="padding:12px;display:flex;flex-direction:column;gap:8px;overflow:hidden;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div><div style="font-size:13px;font-weight:700;color:var(--n1000);">신동현 — 6월 2주차 논술</div><div style="font-size:10px;color:var(--n400);">중3 A반 · 이미지(손글씨) 첨부 · 제출 2일 전 · <span style="color:var(--er);">AI 분석 대기</span></div></div>
+              <div style="display:flex;gap:5px;">
+                <button class="btn bg" style="padding:4px 9px;font-size:11px;"><i class="ti ti-device-floppy" aria-hidden="true"></i>임시저장</button>
+                <button class="btn bg" style="padding:4px 9px;font-size:11px;"><i class="ti ti-microphone" aria-hidden="true"></i>음성 첨삭</button>
+                <button class="btn bp" style="padding:4px 9px;font-size:11px;"><i class="ti ti-check" aria-hidden="true"></i>첨삭 완료</button>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:8px;flex:1;min-height:0;">
+              <div style="flex:1.2;background:var(--n50);border:var(--bd);border-radius:var(--r);padding:10px;overflow-y:auto;">
+                <div style="font-size:9.5px;font-weight:700;color:var(--n400);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;">제출 원고 (이미지)</div>
+                <div style="background:var(--n0);border:var(--bd);border-radius:var(--r);height:160px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;cursor:pointer;">
+                  <i class="ti ti-photo" style="font-size:22px;color:var(--n300);" aria-hidden="true"></i>
+                  <div style="font-size:11px;color:var(--n400);">손글씨 원고 이미지</div>
+                  <div style="font-size:10px;color:var(--n300);">클릭하여 드로잉 첨삭 시작</div>
+                </div>
+                <div style="margin-top:8px;font-size:9.5px;font-weight:700;color:var(--n400);margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em;">텍스트 원고</div>
+                <div style="font-size:11.5px;color:var(--n800);line-height:1.7;">현대 사회에서 환경 문제는 더 이상 미룰 수 없는 중요한 과제이다...<br><br><span style="border-left:2px solid var(--br);padding-left:6px;background:rgba(58,75,255,.06);display:block;border-radius:0 3px 3px 0;">경제 성장과 환경 보호는 <span style="background:rgba(245,184,0,.35);padding:0 2px;">상충관계에 있다는 인식</span>이 만연해 있어...</span></div>
+              </div>
+
+              <div style="width:172px;display:flex;flex-direction:column;gap:7px;overflow-y:auto;">
+                <div style="background:var(--pu-l);border-radius:var(--r);padding:8px;">
+                  <div style="font-size:10px;font-weight:700;color:var(--pu);margin-bottom:5px;display:flex;align-items:center;gap:4px;"><i class="ti ti-robot" aria-hidden="true" style="font-size:12px;"></i>AI 첨삭 보조 <span class="phase" style="font-size:9px;padding:1px 5px;">2단계</span></div>
+                  <div style="font-size:10.5px;color:var(--n800);line-height:1.5;">맞춤법 오류 <b style="color:var(--er);">2건</b><br>문장 호응 문제 <b style="color:var(--wa);">1건</b><br>구조 분석: 서론 불명확<br>근거 연결: 보통</div>
+                </div>
+                <div>
+                  <div style="font-size:10px;font-weight:700;color:var(--n600);margin-bottom:5px;">루브릭 점수 입력</div>
+                  <div style="display:flex;flex-direction:column;gap:4px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;font-size:11px;"><span style="color:var(--n700);">독해력</span><div style="display:flex;gap:2px;"><span style="cursor:pointer;color:var(--br);">★</span><span style="cursor:pointer;color:var(--br);">★</span><span style="cursor:pointer;color:var(--br);">★</span><span style="cursor:pointer;color:var(--br);">★</span><span style="cursor:pointer;color:var(--n300);">★</span><span style="font-size:10px;color:var(--n400);margin-left:2px;">4/5</span></div></div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;font-size:11px;"><span style="color:var(--n700);">논리력</span><div style="display:flex;gap:2px;"><span style="cursor:pointer;color:var(--br);">★</span><span style="cursor:pointer;color:var(--br);">★</span><span style="cursor:pointer;color:var(--br);">★</span><span style="cursor:pointer;color:var(--n300);">★</span><span style="cursor:pointer;color:var(--n300);">★</span><span style="font-size:10px;color:var(--n400);margin-left:2px;">3/5</span></div></div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;font-size:11px;"><span style="color:var(--n700);">구성력</span><div style="display:flex;gap:2px;"><span style="cursor:pointer;color:var(--br);">★</span><span style="cursor:pointer;color:var(--br);">★</span><span style="cursor:pointer;color:var(--br);">★</span><span style="cursor:pointer;color:var(--n300);">★</span><span style="cursor:pointer;color:var(--n300);">★</span><span style="font-size:10px;color:var(--n400);margin-left:2px;">3/5</span></div></div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;font-size:11px;"><span style="color:var(--n700);">표현력</span><div style="display:flex;gap:2px;"><span style="cursor:pointer;color:var(--br);">★</span><span style="cursor:pointer;color:var(--br);">★</span><span style="cursor:pointer;color:var(--br);">★</span><span style="cursor:pointer;color:var(--br);">★</span><span style="cursor:pointer;color:var(--n300);">★</span><span style="font-size:10px;color:var(--n400);margin-left:2px;">4/5</span></div></div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;font-size:11px;"><span style="color:var(--n700);">창의성</span><div style="display:flex;gap:2px;"><span style="cursor:pointer;color:var(--br);">★</span><span style="cursor:pointer;color:var(--br);">★</span><span style="cursor:pointer;color:var(--n300);">★</span><span style="cursor:pointer;color:var(--n300);">★</span><span style="cursor:pointer;color:var(--n300);">★</span><span style="font-size:10px;color:var(--n400);margin-left:2px;">2/5</span></div></div>
+                  </div>
+                </div>
+                <div>
+                  <div style="font-size:10px;font-weight:700;color:var(--n600);margin-bottom:4px;">강사 코멘트</div>
+                  <textarea style="width:100%;border:var(--bd);border-radius:var(--r);padding:6px;font-size:10.5px;font-family:inherit;color:var(--n1000);resize:none;background:var(--n0);" rows="3" placeholder="AI 초안을 참고하여 코멘트를 작성하세요..."></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ⑧ 성장지표 -->
+      <div id="p-growth" class="panel">
+        <div class="ph">
+          <div><div class="pt">성장지표 관리</div><div class="ps">독해·사고·논리·구성·표현·창의·성실·발표 8개 영역 루브릭 기반 추적</div></div>
+          <select style="border:var(--bd);background:var(--n0);border-radius:var(--r);padding:6px 10px;font-size:11.5px;color:var(--n700);font-family:inherit;">
+            <option>김민준 (중3 A반)</option><option>이서윤 (고1 B반)</option><option>최예린 (고2 C반)</option>
+          </select>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:12px;">
+          <div class="sc"><div class="slb">독해력</div><div class="sv" style="font-size:18px;color:var(--br);">87<span style="font-size:11px;font-weight:400;">/100</span></div><div class="sd">↑ +5 (1개월)</div><div class="pbar" style="margin-top:6px;"><div class="pf" style="width:87%"></div></div></div>
+          <div class="sc"><div class="slb">논리력</div><div class="sv" style="font-size:18px;color:var(--ok);">79<span style="font-size:11px;font-weight:400;">/100</span></div><div class="sd">↑ +8 (1개월)</div><div class="pbar" style="margin-top:6px;"><div class="pf" style="width:79%;background:var(--ok);"></div></div></div>
+          <div class="sc"><div class="slb">구성력</div><div class="sv" style="font-size:18px;color:var(--wa);">72<span style="font-size:11px;font-weight:400;">/100</span></div><div class="sd">↑ +3 (1개월)</div><div class="pbar" style="margin-top:6px;"><div class="pf" style="width:72%;background:var(--wa);"></div></div></div>
+          <div class="sc"><div class="slb">표현력</div><div class="sv" style="font-size:18px;color:var(--sec);">65<span style="font-size:11px;font-weight:400;">/100</span></div><div class="sd dn">→ +1 (1개월)</div><div class="pbar" style="margin-top:6px;"><div class="pf" style="width:65%;background:var(--sec);"></div></div></div>
+          <div class="sc"><div class="slb">사고력</div><div class="sv" style="font-size:18px;color:var(--tl);">74<span style="font-size:11px;font-weight:400;">/100</span></div><div class="sd">↑ +6 (1개월)</div><div class="pbar" style="margin-top:6px;"><div class="pf" style="width:74%;background:var(--tl);"></div></div></div>
+          <div class="sc"><div class="slb">창의성</div><div class="sv" style="font-size:18px;color:var(--pu);">58<span style="font-size:11px;font-weight:400;">/100</span></div><div class="sd dn">→ +0 (1개월)</div><div class="pbar" style="margin-top:6px;"><div class="pf" style="width:58%;background:var(--pu);"></div></div></div>
+          <div class="sc"><div class="slb">성실도</div><div class="sv" style="font-size:18px;color:var(--n700);">90<span style="font-size:11px;font-weight:400;">/100</span></div><div class="sd">출석·과제 기반</div><div class="pbar" style="margin-top:6px;"><div class="pf" style="width:90%;background:var(--n700);"></div></div></div>
+          <div class="sc"><div class="slb">발표·토론력</div><div class="sv" style="font-size:18px;color:var(--ok);">70<span style="font-size:11px;font-weight:400;">/100</span></div><div class="sd">↑ +4 (1개월)</div><div class="pbar" style="margin-top:6px;"><div class="pf" style="width:70%;background:var(--ok);"></div></div></div>
+        </div>
+        <div class="g2">
+          <div class="card">
+            <div class="ch"><span class="ct">월별 종합 성장 추이</span><span style="font-size:10px;color:var(--n400);">2026년 3–6월</span></div>
+            <div style="display:flex;align-items:flex-end;gap:5px;height:80px;margin-bottom:4px;">
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:100%;background:var(--br-l);border-radius:3px 3px 0 0;height:44px;"></div><span style="font-size:9px;color:var(--n400);">3월</span></div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:100%;background:var(--br-2);border-radius:3px 3px 0 0;height:54px;"></div><span style="font-size:9px;color:var(--n400);">4월</span></div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:100%;background:var(--br-2);border-radius:3px 3px 0 0;height:62px;"></div><span style="font-size:9px;color:var(--n400);">5월</span></div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;position:relative;"><div style="width:100%;background:var(--br);border-radius:3px 3px 0 0;height:74px;"></div><span style="font-size:9px;color:var(--n400);font-weight:700;">6월</span><span style="position:absolute;top:-14px;font-size:10px;font-weight:700;color:var(--br);">74</span></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="ch"><span class="ct">루브릭 기준 (독해력 예시)</span><button class="btn bg" style="padding:2px 7px;font-size:10px;">전체 보기</button></div>
+            <div style="display:flex;flex-direction:column;gap:3px;">
+              <div style="display:flex;align-items:flex-start;gap:7px;padding:4px 6px;background:var(--ok-l);border-radius:4px;"><span style="font-size:10px;font-weight:700;color:var(--ok-d);width:20px;flex-shrink:0;">5점</span><span style="font-size:10.5px;color:var(--n800);">제시문 간 관계, 숨은 전제, 논제와의 연결까지 깊이 이해함</span></div>
+              <div style="display:flex;align-items:flex-start;gap:7px;padding:4px 6px;background:var(--br-l);border-radius:4px;"><span style="font-size:10px;font-weight:700;color:var(--br);width:20px;flex-shrink:0;">4점</span><span style="font-size:10.5px;color:var(--n800);">핵심 주장과 근거를 정확히 파악함 ← 현재</span></div>
+              <div style="display:flex;align-items:flex-start;gap:7px;padding:4px 6px;background:var(--n50);border-radius:4px;"><span style="font-size:10px;font-weight:700;color:var(--n500);width:20px;flex-shrink:0;">3점</span><span style="font-size:10.5px;color:var(--n800);">제시문의 중심 내용을 대체로 이해함</span></div>
+              <div style="display:flex;align-items:flex-start;gap:7px;padding:4px 6px;background:var(--n50);border-radius:4px;"><span style="font-size:10px;font-weight:700;color:var(--n500);width:20px;flex-shrink:0;">2점</span><span style="font-size:10.5px;color:var(--n800);">일부 이해하지만 핵심 주장 파악 부족</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ⑨ 포트폴리오 -->
+      <div id="p-portfolio" class="panel">
+        <div class="ph">
+          <div><div class="pt">학생 포트폴리오</div><div class="ps">김민준 · 중3 A반 · 논술 시작 2025년 9월 · 총 28편 제출</div></div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn bg"><i class="ti ti-file-export" aria-hidden="true"></i>PDF 출력</button>
+            <button class="btn bp"><i class="ti ti-star" aria-hidden="true"></i>대표작 선정</button>
+          </div>
+        </div>
+        <div class="g4" style="margin-bottom:12px;">
+          <div class="sc"><div class="slb">제출 총 편수</div><div class="sv">28</div><div class="sd">9개월</div></div>
+          <div class="sc"><div class="slb">첨삭 완료</div><div class="sv">26</div><div class="sd">완료율 93%</div></div>
+          <div class="sc"><div class="slb">수정 제출</div><div class="sv">18</div><div class="sd">64% 재제출</div></div>
+          <div class="sc"><div class="slb">종합 성장점수</div><div class="sv" style="color:var(--br);">76</div><div class="sd">↑ +24 (입학 대비)</div></div>
+        </div>
+        <div class="g2">
+          <div class="card">
+            <div class="ch"><span class="ct">글 성장 이력 (최근 3편)</span><button class="btn bg" style="padding:2px 7px;font-size:10px;">전체보기</button></div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div style="padding:9px;background:var(--ok-l);border-radius:var(--r);">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                  <span style="font-size:11.5px;font-weight:700;color:var(--n1000);">6월 2주차 논술</span>
+                  <span class="badge btl">대표작</span>
+                </div>
+                <div style="font-size:10.5px;color:var(--n600);">독해 4 · 논리 4 · 구성 4 · 표현 4 · 창의 3</div>
+                <div style="font-size:10.5px;color:var(--ok-d);margin-top:3px;">근거 제시 능력 현저히 향상</div>
+              </div>
+              <div style="padding:9px;background:var(--br-l);border-radius:var(--r);">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                  <span style="font-size:11.5px;font-weight:700;color:var(--n1000);">5월 종합 평가</span>
+                  <span class="badge bnn">수정 제출</span>
+                </div>
+                <div style="font-size:10.5px;color:var(--n600);">독해 4 · 논리 3 · 구성 3 · 표현 3 · 창의 2</div>
+                <div style="font-size:10.5px;color:var(--br);margin-top:3px;">서론 구조 보완으로 점수 향상</div>
+              </div>
+              <div style="padding:9px;background:var(--n50);border-radius:var(--r);">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                  <span style="font-size:11.5px;font-weight:700;color:var(--n1000);">4월 독서감상문</span>
+                  <span class="badge bnn">첨삭 완료</span>
+                </div>
+                <div style="font-size:10.5px;color:var(--n600);">독해 3 · 논리 3 · 구성 2 · 표현 3 · 창의 2</div>
+                <div style="font-size:10.5px;color:var(--n400);margin-top:3px;">구성력 부족 → 수정 필요</div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="ch"><span class="ct">Before / After 비교</span><span style="font-size:10px;color:var(--n400);">5월 종합 평가</span></div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <div style="padding:9px;background:var(--er-l);border-radius:var(--r);border-left:3px solid var(--er);border-radius:0 var(--r) var(--r) 0;">
+                <div style="font-size:10px;font-weight:700;color:var(--er-d);margin-bottom:3px;">첨삭 전 (초고)</div>
+                <div style="font-size:11.5px;color:var(--n800);line-height:1.6;">주장은 있으나 근거가 짧고 추상적임. 서론과 결론이 명확하지 않음.</div>
+              </div>
+              <div style="padding:9px;background:var(--ok-l);border-radius:var(--r);border-left:3px solid var(--ok);border-radius:0 var(--r) var(--r) 0;">
+                <div style="font-size:10px;font-weight:700;color:var(--ok-d);margin-bottom:3px;">수정 후 (최종본)</div>
+                <div style="font-size:11.5px;color:var(--n800);line-height:1.6;">구체적 사례 2건 추가. 서론에 논제 해석 명시. 설득력이 눈에 띄게 향상됨.</div>
+              </div>
+              <div style="padding:7px 9px;background:var(--br-l);border-radius:var(--r);font-size:11px;color:var(--br);font-weight:600;">
+                <i class="ti ti-arrow-up" aria-hidden="true" style="font-size:12px;"></i>&nbsp;논리력 3 → 4점 · 구성력 2 → 3점 향상
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ⑩ 학부모 리포트 -->
+      <div id="p-parent" class="panel">
+        <div class="ph">
+          <div><div class="pt">학부모 리포트</div><div class="ps">주간 미니 알림 · 월간 종합 리포트 · 상담자료</div></div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn bs"><i class="ti ti-send" aria-hidden="true"></i>주간 알림 발송</button>
+            <button class="btn bp"><i class="ti ti-file-export" aria-hidden="true"></i>월간 PDF 출력</button>
+          </div>
+        </div>
+        <div style="padding:11px 14px;background:var(--br-l);border-radius:var(--rl);border:1px solid var(--br-2);margin-bottom:14px;display:flex;align-items:center;gap:10px;">
+          <div class="av-m">김</div>
+          <div><div style="font-size:13.5px;font-weight:700;color:var(--n1000);">김민준 학부모님</div><div style="font-size:11px;color:var(--n500);">중3 A반 · 담당: 박선생님 · 수강 9개월째</div></div>
+          <button class="btn bg" style="margin-left:auto;padding:4px 10px;font-size:11px;"><i class="ti ti-phone" aria-hidden="true"></i>상담 요청</button>
+        </div>
+
+        <div class="g4" style="margin-bottom:12px;">
+          <div class="sc"><div class="si si-g"><i class="ti ti-calendar-check" aria-hidden="true"></i></div><div class="slb">이번달 출석</div><div class="sv">95%</div><div class="sd">19/20회</div></div>
+          <div class="sc"><div class="si si-b"><i class="ti ti-clipboard-check" aria-hidden="true"></i></div><div class="slb">과제 제출률</div><div class="sv">90%</div><div class="sd">↑ 지난달 +5%</div></div>
+          <div class="sc"><div class="si si-t"><i class="ti ti-pencil" aria-hidden="true"></i></div><div class="slb">첨삭 완료</div><div class="sv">8건</div><div class="sd">이번달</div></div>
+          <div class="sc"><div class="si si-p"><i class="ti ti-chart-line" aria-hidden="true"></i></div><div class="slb">종합 성장점수</div><div class="sv">76</div><div class="sd">↑ +7점</div></div>
+        </div>
+
+        <div class="g2">
+          <div class="card">
+            <div class="ch"><span class="ct">이번 주 미니 알림 미리보기</span><button class="btn bg" style="padding:2px 7px;font-size:10px;"><i class="ti ti-edit" aria-hidden="true"></i>수정</button></div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <div style="padding:9px 11px;background:var(--ok-l);border-radius:var(--r);font-size:11.5px;color:var(--n800);line-height:1.6;border-left:3px solid var(--ok);border-radius:0 var(--r) var(--r) 0;">"이번 주 민준이가 '인공지능과 직업시장' 주제로 980자의 논술문을 완성하여 제출했습니다."</div>
+              <div style="padding:9px 11px;background:var(--br-l);border-radius:0 var(--r) var(--r) 0;border-left:3px solid var(--br);font-size:11.5px;color:var(--n800);line-height:1.6;">"이번 주 과제 첨삭이 완료되었습니다. 주장과 근거의 연결이 지난달보다 분명해졌습니다."</div>
+              <div style="padding:9px 11px;background:var(--n50);border-radius:var(--r);font-size:11.5px;color:var(--n800);line-height:1.6;">"이번 주 수업에서 토론 참여도가 높았고, 자신의 의견을 더 분명하게 표현했습니다."</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="ch"><span class="ct">월간 종합 리포트 — 6월</span><span style="font-size:10px;color:var(--n400);">강사 최종 검토 전</span></div>
+            <div style="display:flex;flex-direction:column;gap:4px;font-size:11.5px;color:var(--n800);">
+              <div class="info-row"><i class="ti ti-check" aria-hidden="true" style="color:var(--ok);"></i>이번 달 글의 중심 주장을 세우는 힘이 좋아졌습니다.</div>
+              <div class="info-row"><i class="ti ti-check" aria-hidden="true" style="color:var(--ok);"></i>자신의 생각을 구체적 사례와 연결하려는 변화가 보입니다.</div>
+              <div class="info-row"><i class="ti ti-arrow-right" aria-hidden="true" style="color:var(--wa);"></i>문단과 문단 사이를 자연스럽게 이어주는 훈련이 더 필요합니다.</div>
+              <div class="info-row"><i class="ti ti-target" aria-hidden="true" style="color:var(--br);"></i>다음 달 목표: 반론-재반박 구조 쓰기 연습</div>
+            </div>
+            <div class="divider"></div>
+            <div style="font-size:10px;color:var(--n400);">알림 유형: <span class="badge bnn" style="margin:0 3px;">출석</span><span class="badge bnn" style="margin:0 3px;">과제 제출</span><span class="badge bok" style="margin:0 3px;">첨삭 완료</span><span class="badge bbr" style="margin:0 3px;">리포트 발행</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+var SCREENS={dash:'대시보드',students:'학생회원 관리',records:'수업기록 관리',lessons:'강의 콘텐츠 관리',assignments:'과제 관리',submit:'과제 제출',feedback:'첨삭 관리',growth:'성장지표 관리',portfolio:'포트폴리오',parent:'학부모 리포트'};
+function go(id,el){
+  Object.keys(SCREENS).forEach(function(k){
+    var p=document.getElementById('p-'+k);
+    if(p) p.classList.remove('on');
+  });
+  document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('on');});
+  var t=document.getElementById('p-'+id);
+  if(t) t.classList.add('on');
+  if(el) el.classList.add('on');
+  document.getElementById('tb-t').textContent=SCREENS[id]||id;
+}
+function tabSwitch(gid,el){
+  var g=document.getElementById(gid);
+  if(!g) return;
+  g.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
+  el.classList.add('on');
+}
+function countChars(){
+  var ta=document.getElementById('essay-area');
+  var cc=document.getElementById('char-count');
+  var cm=document.getElementById('char-msg');
+  if(!ta||!cc||!cm) return;
+  var n=ta.value.length;
+  cc.textContent=n.toLocaleString()+' / 1,200자';
+  if(n<800){cc.style.color='var(--er)';cm.textContent='최소 '+Math.max(0,800-n)+'자 더 작성';cm.style.color='var(--er)';}
+  else if(n<=1200){cc.style.color='var(--ok)';cm.textContent='제출 가능';cm.style.color='var(--ok)';}
+  else{cc.style.color='var(--er)';cm.textContent=(n-1200)+'자 초과';cm.style.color='var(--er)';}
+}
+</script>

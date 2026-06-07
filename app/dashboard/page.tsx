@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import LmsShell from "@/components/lms/LmsShell";
 
 // 역할 미설정 계정 및 개발 테스트용 임시 대시보드 (Server Component)
 // 역할이 있는 사용자는 미들웨어가 역할별 대시보드로 리다이렉트합니다.
@@ -19,6 +20,10 @@ export default async function DashboardPage() {
     .select("id, email, name, role")
     .eq("id", user.id)
     .single();
+
+  if (profile?.role === "admin") {
+    return <LmsShell initialMenu="dashboard" />;
+  }
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-zinc-50 px-6 text-center">
