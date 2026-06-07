@@ -147,3 +147,144 @@ export type LmsMockData = {
   parentReport: ParentReportSummary;
   board: BoardPost[];
 };
+
+// Supabase 실데이터 기반 학생 목록 행 타입입니다.
+export type LmsStudentPanelRow = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  classLabel: string;
+  classIds: string[];
+  parentCount: number;
+  role: "student" | "admin" | "teacher" | "parent";
+  createdAt: string;
+};
+
+// 관리자 학생 상세 화면에 필요한 과제/첨삭 요약 타입입니다.
+export type StudentRecentSubmission = {
+  id: string;
+  assignmentTitle: string;
+  submittedAt: string;
+  status: "submitted" | "reviewed";
+  feedbackComment: string | null;
+};
+
+export type StudentProfileDetail = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  role: "student" | "admin" | "teacher" | "parent";
+  createdAt: string;
+};
+
+export type StudentProfileUpdateInput = {
+  name: string;
+  email: string;
+  phone: string | null;
+};
+
+export type StudentSearchParams = {
+  query?: string;
+  classId?: string;
+};
+
+export type LmsClassRow = {
+  id: string;
+  name: string;
+  description: string | null;
+  teacherId: string | null;
+  teacherName: string | null;
+  studentCount: number;
+  createdAt: string;
+};
+
+export type LmsClassDetail = {
+  id: string;
+  name: string;
+  description: string | null;
+  teacherId: string | null;
+  teacherName: string | null;
+  createdAt: string;
+};
+
+export type LmsClassStudent = {
+  studentId: string;
+  name: string;
+  email: string;
+  role: string;
+};
+
+export type ClassSearchParams = {
+  query?: string;
+};
+
+export type ClassUpsertInput = {
+  name: string;
+  description: string | null;
+  teacherId: string | null;
+};
+
+export type AttendanceStatus = "출석" | "지각" | "결석" | "보강";
+export type ParticipationLevel = "적극" | "보통" | "소극";
+export type AssignmentStatus = "제출" | "미제출" | "지연 제출";
+
+export type ClassRecordStudent = {
+  studentId: string;
+  studentName: string;
+  studentEmail: string;
+  attendanceStatus: AttendanceStatus;
+  focusLevel: "1" | "2" | "3" | "4" | "5";
+  understandingLevel: "1" | "2" | "3" | "4" | "5";
+  presentationParticipation: ParticipationLevel;
+  discussionParticipation: ParticipationLevel;
+  assignmentStatus: AssignmentStatus;
+  memo: string;
+};
+
+export type ClassRecord = {
+  id: string;
+  classId: string;
+  className: string;
+  title: string;
+  lessonDate: string;
+  lessonGoal: string;
+  keyConcepts: string;
+  materials: string;
+  classActivities: string;
+  assignment: string;
+  teacherMemo: string;
+  createdBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+  attendanceRate: number | null;
+  assignmentSubmitRate: number | null;
+  studentRows: ClassRecordStudent[];
+};
+
+export type CreateClassRecordInput = {
+  classId: string;
+  title: string;
+  lessonDate: string;
+  lessonGoal: string;
+  keyConcepts: string;
+  materials: string;
+  classActivities: string;
+  assignment: string;
+  teacherMemo: string;
+  createdBy: string;
+  studentRows: ClassRecordStudent[];
+};
+
+export type UpdateClassRecordInput = {
+  title?: string;
+  lessonDate?: string;
+  lessonGoal?: string;
+  keyConcepts?: string;
+  materials?: string;
+  classActivities?: string;
+  assignment?: string;
+  teacherMemo?: string;
+  studentRows?: ClassRecordStudent[];
+};

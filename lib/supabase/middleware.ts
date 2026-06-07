@@ -1,13 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-
-// 역할(role)별 기본 대시보드 경로입니다.
-const ROLE_HOME: Record<string, string> = {
-  admin: "/admin/dashboard",
-  teacher: "/teacher/dashboard",
-  student: "/student/dashboard",
-  parent: "/parent/dashboard",
-};
+import { getHomeByRole } from "@/lib/auth/role-redirect";
 
 // 역할 기반으로 보호되는 경로의 접두사입니다.
 const ROLE_PREFIX: Record<string, string> = {
@@ -111,16 +104,24 @@ export async function updateSession(request: NextRequest) {
   // 3) 로그인 사용자가 /login 또는 /dashboard 에 접근하면 자기 대시보드로 보냅니다.
   const isGenericEntry =
     pathname === LOGIN_PATH || pathname === "/dashboard";
-  if (user && isGenericEntry && role && ROLE_HOME[role]) {
+  const homeByRole = getHomeByRole(role);
+  if (user && isGenericEntry && homeByRole) {
     const url = request.nextUrl.clone();
-    url.pathname = ROLE_HOME[role];
+    url.pathname = homeByRole;
     return redirectWithCookies(url, supabaseResponse);
   }
 
   // 4) 로그인 사용자가 자신의 역할과 다른 역할 경로에 접근하면 자기 대시보드로 리다이렉트합니다.
-  if (user && requiredRole && role && requiredRole !== role && ROLE_HOME[role]) {
+  if (user && requiredRole && homeByRole && requiredRole !== role) {
     const url = request.nextUrl.clone();
-    url.pathname = ROLE_HOME[role];
+    url.pathname = homeByRole;
+    return redirectWithCookies(url, supabaseResponse);
+  }
+
+  // 5) 로그인은 되었지만 role 미설정 상태에서 보호 경로 접근 시 /dashboard 로 보냅니다.
+  if (user && requiredRole && !homeByRole) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/dashboard";
     return redirectWithCookies(url, supabaseResponse);
   }
 

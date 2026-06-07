@@ -1,6 +1,10 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import Card from "@/components/ui/Card";
+import Button from "@/components/ui/Button";
+import Badge from "@/components/ui/Badge";
+import { getStudentRecentSubmissions } from "@/lib/lms/queries/students";
 
 // 관리자 학생 상세 — 반 배정·학부모 연결 관리
 export default async function AdminStudentDetailPage({
@@ -17,12 +21,14 @@ export default async function AdminStudentDetailPage({
     { data: enrolledClasses },
     { data: allParents },
     { data: linkedParents },
+    recentSubmissions,
   ] = await Promise.all([
     supabase.from("profiles").select("id, name, email, phone").eq("id", id).eq("role", "student").single(),
     supabase.from("classes").select("id, name").order("name"),
     supabase.from("class_students").select("class_id, classes ( name )").eq("student_id", id),
     supabase.from("profiles").select("id, name, email").eq("role", "parent").order("name"),
     supabase.from("parent_students").select("parent_id, profiles!parent_id ( name, email )").eq("student_id", id),
+    getStudentRecentSubmissions(id),
   ]);
 
   if (!student) notFound();
@@ -77,19 +83,26 @@ export default async function AdminStudentDetailPage({
       </Link>
 
       {/* 학생 프로필 헤더 */}
-      <div className="mt-4 mb-8 flex items-center gap-4">
+      <div className="mt-4 mb-8 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 text-lg font-bold text-blue-700">
           {student.name.charAt(0)}
         </div>
         <div>
           <h1 className="text-2xl font-bold text-zinc-900">{student.name}</h1>
           <p className="text-sm text-zinc-500">{student.email}{student.phone ? ` · ${student.phone}` : ""}</p>
+          <p className="mt-1 text-xs text-zinc-400">역할: student (profiles.role 기반)</p>
         </div>
+        </div>
+        <Button asChild variant="ghost">
+          <Link href={`/admin/students/${id}/edit`}>정보 수정</Link>
+        </Button>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-2">
+      <div className="grid gap-8 xl:grid-cols-3">
         {/* 반 배정 */}
-        <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <section className="xl:col-span-2">
+          <Card className="p-6">
           <h2 className="mb-4 text-sm font-semibold text-zinc-800">반 배정</h2>
 
           {enrolledClasses && enrolledClasses.length > 0 ? (
@@ -124,15 +137,15 @@ export default async function AdminStudentDetailPage({
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
               </select>
-              <button type="submit" className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700">
-                배정
-              </button>
+              <Button type="submit" variant="primary">배정</Button>
             </form>
           )}
+          </Card>
         </section>
 
         {/* 학부모 연결 */}
-        <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <section className="xl:col-span-1">
+          <Card className="p-6">
           <h2 className="mb-4 text-sm font-semibold text-zinc-800">학부모 연결</h2>
 
           {linkedParents && linkedParents.length > 0 ? (
@@ -171,12 +184,47 @@ export default async function AdminStudentDetailPage({
                   <option key={p.id} value={p.id}>{p.name} ({p.email})</option>
                 ))}
               </select>
-              <button type="submit" className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700">
-                연결
-              </button>
+              <Button type="submit" variant="primary">연결</Button>
             </form>
           )}
+          </Card>
         </section>
+      </div>
+
+      <div className="mt-8 grid gap-8 lg:grid-cols-2">
+        <Card className="p-6">
+          <h2 className="mb-4 text-sm font-semibold text-zinc-800">최근 과제 / 첨삭</h2>
+          {recentSubmissions.length === 0 ? (
+            <p className="text-sm text-zinc-400">최근 제출 이력이 없습니다.</p>
+          ) : (
+            <ul className="space-y-3">
+              {recentSubmissions.map((item) => (
+                <li key={item.id} className="rounded-xl border border-zinc-100 bg-zinc-50 p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-sm font-semibold text-zinc-800">{item.assignmentTitle}</p>
+                    <Badge tone={item.status === "reviewed" ? "success" : "warning"}>
+                      {item.status === "reviewed" ? "첨삭 완료" : "첨삭 대기"}
+                    </Badge>
+                  </div>
+                  <p className="mt-1 text-xs text-zinc-500">
+                    제출일 {new Date(item.submittedAt).toLocaleString("ko-KR")}
+                  </p>
+                  <p className="mt-2 text-sm text-zinc-600">
+                    {item.feedbackComment ?? "아직 첨삭 코멘트가 없습니다."}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+
+        <Card className="p-6">
+          <h2 className="mb-4 text-sm font-semibold text-zinc-800">성장 메모</h2>
+          <p className="text-sm text-zinc-500">
+            1차 구현에서는 최근 제출/첨삭 요약을 기반으로 성장 메모 영역 구조만 제공합니다.
+            성장지표 상세 저장 기능은 2차에서 추가합니다.
+          </p>
+        </Card>
       </div>
     </div>
   );

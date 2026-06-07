@@ -3,6 +3,7 @@ import Card from "@/components/ui/Card";
 import LmsBadge from "@/components/lms/LmsBadge";
 import ProgressBar from "@/components/lms/ProgressBar";
 import { LmsMockData } from "@/lib/lms/types";
+import Link from "next/link";
 
 type StudentsPanelProps = {
   data: LmsMockData;
@@ -30,7 +31,9 @@ export default function StudentsPanel({ data }: StudentsPanelProps) {
             <option>강사 전체</option>
           </select>
           <div className="sm:ml-auto">
-            <Button variant="primary" className="h-8 rounded-[var(--lms-r)] px-3 text-xs">학생 추가</Button>
+            <Button asChild variant="primary" className="h-8 rounded-[var(--lms-r)] px-3 text-xs">
+              <Link href="/admin/students/new">학생 추가</Link>
+            </Button>
           </div>
         </div>
       </Card>

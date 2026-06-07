@@ -1,14 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getHomeByRole } from "@/lib/auth/role-redirect";
 import LoginForm from "./LoginForm";
-
-// 역할(role)별 기본 대시보드 경로 — 미들웨어와 동일하게 맞춥니다.
-const ROLE_HOME: Record<string, string> = {
-  admin: "/admin/dashboard",
-  teacher: "/teacher/dashboard",
-  student: "/student/dashboard",
-  parent: "/parent/dashboard",
-};
 
 // 로그인 페이지 — 서버 컴포넌트
 // 이미 로그인된 사용자는 자신의 대시보드로 바로 보냅니다.
@@ -19,16 +12,19 @@ export default async function LoginPage() {
   } = await supabase.auth.getUser();
 
   if (user) {
-    const { data: profile } = await supabase
+    const { data: profile, error } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .single();
 
-    const home = profile?.role ? ROLE_HOME[profile.role] : null;
+    const home = getHomeByRole(profile?.role);
     if (home) redirect(home);
 
-    // role이 없는 로그인 계정은 /dashboard(임시 화면)로 보냅니다.
+    // role 조회 실패 또는 미설정 계정은 /dashboard 로 보냅니다.
+    if (error) {
+      redirect("/dashboard");
+    }
     redirect("/dashboard");
   }
 

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
+import LogoutButton from "@/components/auth/LogoutButton";
 
 // 강사 대시보드 — 인증/역할 검증은 app/teacher/layout.tsx 에서 처리합니다.
 export default async function TeacherDashboardPage() {
@@ -26,8 +27,13 @@ export default async function TeacherDashboardPage() {
     <div>
       {/* 페이지 헤더 */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-zinc-900">강사 대시보드</h1>
-        <p className="mt-1 text-sm text-zinc-500">첨삭 대기 제출물을 확인합니다.</p>
+        <div className="flex items-center justify-between gap-2">
+          <div>
+            <h1 className="text-2xl font-bold text-zinc-900">강사 대시보드</h1>
+            <p className="mt-1 text-sm text-zinc-500">첨삭 대기 제출물을 확인합니다.</p>
+          </div>
+          <LogoutButton />
+        </div>
       </div>
 
       {/* 첨삭 대기 섹션 */}

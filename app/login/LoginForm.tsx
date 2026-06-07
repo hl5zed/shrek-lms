@@ -29,7 +29,7 @@ export default function LoginForm() {
       return;
     }
 
-    // 역할별 리다이렉트는 proxy.ts(미들웨어)의 updateSession이 처리합니다.
+    // 역할별 이동은 서버(middleware + /dashboard 서버 리다이렉트)가 profiles.role 기준으로 처리합니다.
     // replace를 사용해 뒤로가기로 /login 재진입을 방지합니다.
     router.replace("/dashboard");
   }
