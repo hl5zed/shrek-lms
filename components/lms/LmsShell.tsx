@@ -20,9 +20,10 @@ import SettingsPanel from "./panels/SettingsPanel";
 
 type LmsShellProps = {
   initialMenu?: LmsMenuKey;
+  fullscreen?: boolean;
 };
 
-export default function LmsShell({ initialMenu = "dashboard" }: LmsShellProps) {
+export default function LmsShell({ initialMenu = "dashboard", fullscreen = false }: LmsShellProps) {
   const [activeMenu, setActiveMenu] = useState<LmsMenuKey>(initialMenu);
   const data = lmsMockData;
 
@@ -58,12 +59,26 @@ export default function LmsShell({ initialMenu = "dashboard" }: LmsShellProps) {
   }, [activeMenu, data]);
 
   return (
-    <div className="overflow-hidden rounded-[var(--lms-rx)] border border-[var(--color-neutral-200)] bg-[var(--color-neutral-50)]">
-      <div className="flex h-[760px]">
+    <div
+      className={`overflow-hidden bg-[var(--color-neutral-50)] ${
+        fullscreen
+          ? "min-h-screen rounded-none border-0"
+          : "rounded-[var(--lms-rx)] border border-[var(--color-neutral-200)]"
+      }`}
+    >
+      <div className={`flex ${fullscreen ? "min-h-screen" : "h-[760px]"}`}>
         <LmsSidebar menus={data.menus} activeMenu={activeMenu} onChangeMenu={setActiveMenu} />
         <div className="min-w-0 flex-1 bg-[var(--color-neutral-50)]">
           <LmsTopbar activeMenu={activeMenu} menus={data.menus} />
-          <div className="lms-scrollbar h-[calc(760px-var(--lms-topbar-h))] overflow-y-auto p-[var(--lms-content-p)]">{panel}</div>
+          <div
+            className={`lms-scrollbar overflow-y-auto p-[var(--lms-content-p)] ${
+              fullscreen
+                ? "h-[calc(100vh-var(--lms-topbar-h))]"
+                : "h-[calc(760px-var(--lms-topbar-h))]"
+            }`}
+          >
+            {panel}
+          </div>
         </div>
       </div>
     </div>
