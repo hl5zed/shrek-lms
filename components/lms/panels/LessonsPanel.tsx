@@ -11,11 +11,11 @@ type LessonsPanelProps = {
 export default function LessonsPanel({ data }: LessonsPanelProps) {
   return (
     <section className="space-y-3">
-      <div className="flex justify-end gap-1.5">
+      <div className="flex flex-wrap justify-end gap-1.5">
         <Button variant="ghost" className="h-8 rounded-[var(--lms-r)] px-3 text-xs">스트리밍 설정</Button>
         <Button variant="primary" className="h-8 rounded-[var(--lms-r)] px-3 text-xs">콘텐츠 업로드</Button>
       </div>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {data.contents.map((content) => (
           <Card key={content.id} className="rounded-[var(--lms-rl)] p-3">
             <div
@@ -44,7 +44,7 @@ export default function LessonsPanel({ data }: LessonsPanelProps) {
         <p className="text-[11px] font-semibold text-[var(--lms-pu)]">
           비공개 버킷 / Signed URL 안내
         </p>
-        <p className="mt-1 text-[11px] text-[var(--color-neutral-700)]">
+        <p className="mt-1 break-words text-[11px] text-[var(--color-neutral-700)]">
           실서비스에서는 원본 파일을 private bucket에 저장하고, 수강 권한 확인 후 signed URL을 발급하여 접근을 통제합니다.
         </p>
       </Card>

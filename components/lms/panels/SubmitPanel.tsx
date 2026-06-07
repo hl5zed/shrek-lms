@@ -33,7 +33,7 @@ export default function SubmitPanel({ data }: SubmitPanelProps) {
           <Button variant="primary" className="h-8 rounded-[var(--lms-r)] px-3 text-xs">최종 제출</Button>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
         <div className="space-y-3">
           <Card className="rounded-[var(--lms-rl)] p-3">
             <h4 className="text-[12.5px] font-bold text-[var(--color-neutral-1000)]">과제 안내</h4>
@@ -66,10 +66,10 @@ export default function SubmitPanel({ data }: SubmitPanelProps) {
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
-            className="h-[280px] w-full resize-none rounded-[var(--lms-r)] border border-[var(--color-neutral-200)] p-2.5 text-[12px] leading-relaxed outline-none focus:border-[var(--lms-br-2)]"
+            className="h-[220px] w-full resize-none rounded-[var(--lms-r)] border border-[var(--color-neutral-200)] p-2.5 text-[12px] leading-relaxed outline-none focus:border-[var(--lms-br-2)] sm:h-[260px] lg:h-[280px]"
             placeholder="여기에 논술문을 작성하세요..."
           />
-          <div className="mt-1.5 flex justify-between text-[10.5px]">
+          <div className="mt-1.5 flex flex-col gap-1 text-[10.5px] sm:flex-row sm:justify-between">
             <span className="text-[var(--color-neutral-400)]">최소 {data.submitGuide.minChars}자 이상 작성</span>
             <span
               className={
@@ -87,7 +87,7 @@ export default function SubmitPanel({ data }: SubmitPanelProps) {
                   : `최소 ${Math.max(0, data.submitGuide.minChars - count)}자 더 작성`}
             </span>
           </div>
-          <div className="mt-3 flex justify-end gap-1.5">
+          <div className="mt-3 flex flex-wrap justify-end gap-1.5">
             <Button variant="ghost" className="h-8 rounded-[var(--lms-r)] px-3 text-xs">임시저장</Button>
             <Button variant="primary" className="h-8 rounded-[var(--lms-r)] px-3 text-xs">최종 제출</Button>
           </div>

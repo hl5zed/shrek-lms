@@ -10,17 +10,17 @@ export default function PortfolioPanel({ data }: PortfolioPanelProps) {
   return (
     <section className="space-y-4">
       <Card className="p-4">
-        <div className="flex gap-2">
-          <select className="h-10 rounded-lg border border-[var(--color-neutral-200)] px-3 text-sm">
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <select className="h-10 w-full rounded-lg border border-[var(--color-neutral-200)] px-3 text-sm sm:w-auto">
             <option>월별 전체</option>
           </select>
-          <select className="h-10 rounded-lg border border-[var(--color-neutral-200)] px-3 text-sm">
+          <select className="h-10 w-full rounded-lg border border-[var(--color-neutral-200)] px-3 text-sm sm:w-auto">
             <option>과제별 전체</option>
           </select>
         </div>
       </Card>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
         {data.portfolio.map((item) => (
           <Card key={item.id} className="p-5">
             <div className="flex items-center justify-between">

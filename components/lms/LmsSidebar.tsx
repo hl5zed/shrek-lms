@@ -4,9 +4,10 @@ type LmsSidebarProps = {
   menus: LmsMenuItem[];
   activeMenu: LmsMenuKey;
   onChangeMenu: (menu: LmsMenuKey) => void;
+  className?: string;
 };
 
-export default function LmsSidebar({ menus, activeMenu, onChangeMenu }: LmsSidebarProps) {
+export default function LmsSidebar({ menus, activeMenu, onChangeMenu, className = "" }: LmsSidebarProps) {
   const groups: Array<"운영 관리" | "강의 콘텐츠" | "첨삭 & 성장" | "기타"> = [
     "운영 관리",
     "강의 콘텐츠",
@@ -21,7 +22,7 @@ export default function LmsSidebar({ menus, activeMenu, onChangeMenu }: LmsSideb
   };
 
   return (
-    <aside className="flex w-[var(--lms-sidebar-w)] shrink-0 flex-col border-r border-[var(--color-neutral-200)] bg-white">
+    <aside className={`flex shrink-0 flex-col border-r border-[var(--color-neutral-200)] bg-white ${className || "w-[var(--lms-sidebar-w)]"}`}>
       <div className="border-b border-[var(--color-neutral-200)] px-[14px] pb-3 pt-3.5">
         <div className="flex items-center gap-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-[var(--lms-r)] bg-[var(--lms-br)] text-[13px] font-bold text-white">

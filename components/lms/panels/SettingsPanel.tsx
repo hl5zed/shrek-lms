@@ -3,7 +3,7 @@ import Card from "@/components/ui/Card";
 
 export default function SettingsPanel() {
   return (
-    <section className="grid grid-cols-2 gap-4">
+    <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
       <Card className="p-5">
         <h3 className="text-sm font-semibold text-[var(--color-neutral-900)]">기본 학원 정보</h3>
         <div className="mt-3 space-y-2 text-sm">
@@ -36,7 +36,7 @@ export default function SettingsPanel() {
           <label className="flex items-center gap-2"><input type="checkbox" defaultChecked /> 학부모 주간 리포트 자동 발송</label>
           <label className="flex items-center gap-2"><input type="checkbox" /> 첨삭 완료 즉시 알림</label>
         </div>
-        <div className="mt-4 flex justify-end">
+        <div className="mt-4 flex flex-wrap justify-end">
           <Button variant="primary">설정 저장</Button>
         </div>
       </Card>

@@ -13,7 +13,7 @@ export default function ClassRecordsPanel({ data }: ClassRecordsPanelProps) {
     <section className="space-y-3">
       <Card className="rounded-[var(--lms-rl)] p-4">
         <h3 className="text-[12.5px] font-bold text-[var(--color-neutral-1000)]">6월 2주차 — 중등 기초 A반 수업기록</h3>
-        <div className="mt-2 grid grid-cols-2 gap-2 text-[11.5px]">
+        <div className="mt-2 grid grid-cols-1 gap-2 text-[11.5px] md:grid-cols-2">
           <p className="text-[var(--color-neutral-700)]"><b className="text-[var(--color-neutral-800)]">수업일</b> {classRecord.classDate}</p>
           <p className="text-[var(--color-neutral-700)]"><b className="text-[var(--color-neutral-800)]">수업명</b> {classRecord.classTitle}</p>
           <p className="text-[var(--color-neutral-700)]"><b className="text-[var(--color-neutral-800)]">수업 목표</b> {classRecord.goal}</p>
@@ -22,7 +22,8 @@ export default function ClassRecordsPanel({ data }: ClassRecordsPanelProps) {
       </Card>
 
       <Card className="overflow-hidden rounded-[var(--lms-rl)] p-0">
-        <table className="w-full table-fixed text-[11.5px]">
+        <div className="overflow-x-auto">
+          <table className="min-w-[760px] table-fixed text-[11.5px] md:min-w-full">
           <thead className="bg-[var(--color-neutral-50)]">
             <tr className="border-b border-[var(--color-neutral-200)]">
               <th className="px-2.5 py-1.5 text-left text-[9.5px] uppercase tracking-[0.05em] text-[var(--color-neutral-400)]">학생</th>
@@ -55,7 +56,8 @@ export default function ClassRecordsPanel({ data }: ClassRecordsPanelProps) {
               </tr>
             ))}
           </tbody>
-        </table>
+          </table>
+        </div>
       </Card>
 
       <Card className="rounded-[var(--lms-r)] border-l-[3px] border-l-[var(--lms-br)] p-3">

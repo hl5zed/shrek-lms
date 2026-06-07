@@ -11,12 +11,12 @@ export default function ParentReportPanel({ data }: ParentReportPanelProps) {
   const report = data.parentReport;
   return (
     <section className="space-y-4">
-      <div className="flex justify-end">
+      <div className="flex flex-wrap justify-end">
         <Button variant="primary">리포트 출력</Button>
       </div>
       <Card className="p-6">
         <h3 className="text-lg font-bold text-[var(--color-neutral-1000)]">{report.studentName} 학부모 리포트</h3>
-        <div className="mt-4 grid grid-cols-2 gap-4">
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <p className="mb-1 text-xs text-[var(--color-neutral-500)]">출석률 {report.attendanceRate}%</p>
             <ProgressBar value={report.attendanceRate} />

@@ -3,17 +3,25 @@ import { LmsMenuItem, LmsMenuKey } from "@/lib/lms/types";
 type LmsTopbarProps = {
   activeMenu: LmsMenuKey;
   menus: LmsMenuItem[];
+  onToggleMobileMenu: () => void;
 };
 
-export default function LmsTopbar({ activeMenu, menus }: LmsTopbarProps) {
+export default function LmsTopbar({ activeMenu, menus, onToggleMobileMenu }: LmsTopbarProps) {
   const current = menus.find((m) => m.key === activeMenu);
 
   return (
-    <header className="flex h-[var(--lms-topbar-h)] items-center gap-2 border-b border-[var(--color-neutral-200)] bg-white px-[18px]">
+    <header className="flex h-[var(--lms-topbar-h)] items-center gap-2 border-b border-[var(--color-neutral-200)] bg-white px-3 md:px-[18px]">
+      <button
+        type="button"
+        className="flex h-[30px] w-[30px] items-center justify-center rounded-[var(--lms-r)] border border-[var(--color-neutral-200)] text-[var(--color-neutral-600)] md:hidden"
+        onClick={onToggleMobileMenu}
+      >
+        메뉴
+      </button>
       <h2 className="flex-1 text-[14px] font-bold text-[var(--color-neutral-1000)]">
         {current?.label ?? "대시보드"}
       </h2>
-      <div className="flex h-8 min-w-[220px] cursor-text items-center gap-1.5 rounded-[var(--lms-r)] border border-[var(--color-neutral-200)] bg-[var(--color-neutral-50)] px-2.5 text-[11.5px] text-[var(--color-neutral-400)]">
+      <div className="hidden h-8 min-w-[220px] cursor-text items-center gap-1.5 rounded-[var(--lms-r)] border border-[var(--color-neutral-200)] bg-[var(--color-neutral-50)] px-2.5 text-[11.5px] text-[var(--color-neutral-400)] md:flex">
         학생, 과제, 강의 검색...
       </div>
       <button

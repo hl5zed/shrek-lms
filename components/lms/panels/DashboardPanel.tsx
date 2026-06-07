@@ -10,8 +10,8 @@ type DashboardPanelProps = {
 
 export default function DashboardPanel({ data }: DashboardPanelProps) {
   return (
-    <section className="space-y-3">
-      <div className="mb-1 flex items-start justify-between gap-2">
+    <section className="space-y-3 md:space-y-4">
+      <div className="mb-1 flex flex-col items-start justify-between gap-2 sm:flex-row">
         <div>
           <h3 className="text-base font-bold text-[var(--color-neutral-1000)]">안녕하세요, 관리자님</h3>
           <p className="mt-0.5 text-[11px] text-[var(--color-neutral-400)]">오늘 수업 3건 · 첨삭 대기 5건 · 리포트 발행 대기 2건</p>
@@ -19,13 +19,13 @@ export default function DashboardPanel({ data }: DashboardPanelProps) {
         <Button variant="primary" className="h-8 rounded-[var(--lms-r)] px-3 text-xs">학생 추가</Button>
       </div>
 
-      <div className="grid grid-cols-4 gap-2.5">
+      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
         {data.dashboardStats.map((stat) => (
           <StatCard key={stat.label} {...stat} />
         ))}
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
         <Card className="rounded-[var(--lms-rl)] p-4">
           <div className="mb-2 flex items-center justify-between">
             <h3 className="text-[12.5px] font-bold text-[var(--color-neutral-1000)]">관리 필요 학생</h3>
@@ -77,7 +77,7 @@ export default function DashboardPanel({ data }: DashboardPanelProps) {
           <h3 className="text-[12.5px] font-bold text-[var(--color-neutral-1000)]">이번주 수업 일정</h3>
           <span className="text-[10px] text-[var(--color-neutral-400)]">2026년 6월 2주차</span>
         </div>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {data.weeklySchedules.map((schedule) => (
               <div
                 key={schedule.id}

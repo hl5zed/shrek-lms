@@ -54,6 +54,7 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-family-sans);
+  overflow-x: hidden;
 }
 
 .lms-scrollbar::-webkit-scrollbar {
@@ -74,4 +75,16 @@ body {
   border: var(--lms-border);
   border-radius: var(--lms-rl);
   background: var(--color-neutral-0);
+}
+
+@media (max-width: 1023px) {
+  :root {
+    --lms-content-p: 14px;
+  }
+}
+
+@media (max-width: 767px) {
+  :root {
+    --lms-content-p: 12px;
+  }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { lmsMockData } from "@/lib/lms/mock-data";
 import { LmsMenuKey } from "@/lib/lms/types";
 import LmsSidebar from "./LmsSidebar";
@@ -25,7 +25,18 @@ type LmsShellProps = {
 
 export default function LmsShell({ initialMenu = "dashboard", fullscreen = false }: LmsShellProps) {
   const [activeMenu, setActiveMenu] = useState<LmsMenuKey>(initialMenu);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const data = lmsMockData;
+
+  useEffect(() => {
+    function onEsc(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setMobileMenuOpen(false);
+      }
+    }
+    window.addEventListener("keydown", onEsc);
+    return () => window.removeEventListener("keydown", onEsc);
+  }, []);
 
   const panel = useMemo(() => {
     switch (activeMenu) {
@@ -67,11 +78,47 @@ export default function LmsShell({ initialMenu = "dashboard", fullscreen = false
       }`}
     >
       <div className={`flex ${fullscreen ? "min-h-screen" : "h-[760px]"}`}>
-        <LmsSidebar menus={data.menus} activeMenu={activeMenu} onChangeMenu={setActiveMenu} />
+        <div className="hidden md:block">
+          <LmsSidebar
+            menus={data.menus}
+            activeMenu={activeMenu}
+            onChangeMenu={setActiveMenu}
+            className="w-[176px] lg:w-[192px]"
+          />
+        </div>
+
+        {mobileMenuOpen ? (
+          <button
+            type="button"
+            aria-label="메뉴 닫기"
+            className="fixed inset-0 z-40 bg-black/35 md:hidden"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+        ) : null}
+        <div
+          className={`fixed bottom-0 left-0 top-0 z-50 md:hidden transition-transform ${
+            mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
+        >
+          <LmsSidebar
+            menus={data.menus}
+            activeMenu={activeMenu}
+            onChangeMenu={(menu) => {
+              setActiveMenu(menu);
+              setMobileMenuOpen(false);
+            }}
+            className="h-full w-[248px]"
+          />
+        </div>
+
         <div className="min-w-0 flex-1 bg-[var(--color-neutral-50)]">
-          <LmsTopbar activeMenu={activeMenu} menus={data.menus} />
+          <LmsTopbar
+            activeMenu={activeMenu}
+            menus={data.menus}
+            onToggleMobileMenu={() => setMobileMenuOpen((prev) => !prev)}
+          />
           <div
-            className={`lms-scrollbar overflow-y-auto p-[var(--lms-content-p)] ${
+            className={`lms-scrollbar overflow-y-auto p-3 md:p-4 lg:p-[var(--lms-content-p)] ${
               fullscreen
                 ? "h-[calc(100vh-var(--lms-topbar-h))]"
                 : "h-[calc(760px-var(--lms-topbar-h))]"

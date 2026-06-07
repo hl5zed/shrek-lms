@@ -8,7 +8,7 @@ type GrowthPanelProps = {
 
 export default function GrowthPanel({ data }: GrowthPanelProps) {
   return (
-    <section className="grid grid-cols-3 gap-4">
+    <section className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
       {data.growth.map((g) => (
         <Card key={g.studentName} className="p-5">
           <h3 className="text-sm font-semibold text-[var(--color-neutral-900)]">{g.studentName}</h3>
