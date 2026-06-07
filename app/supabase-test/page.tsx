@@ -1,9 +1,15 @@
-import { createSupabaseClient } from "@/lib/supabaseClient";
+import { notFound } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 
-/** profiles 5건 조회로 Supabase 연결을 확인하는 테스트 페이지 */
+/** profiles 5건 조회로 Supabase 연결을 확인하는 테스트 페이지 (개발 환경 전용) */
 export default async function SupabaseTestPage() {
+  // 프로덕션 환경에서는 404를 반환합니다.
+  if (process.env.NODE_ENV !== "development") {
+    notFound();
+  }
+
   try {
-    const supabase = createSupabaseClient();
+    const supabase = await createClient();
 
     const { data, error } = await supabase
       .from("profiles")

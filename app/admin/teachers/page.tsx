@@ -1,0 +1,64 @@
+import { createClient } from "@/lib/supabase/server";
+import Card from "@/components/ui/Card";
+import { Table, TableContainer } from "@/components/ui/Table";
+
+// 관리자 강사 목록
+export default async function AdminTeachersPage() {
+  const supabase = await createClient();
+
+  const { data: teachers } = await supabase
+    .from("profiles")
+    .select("id, name, email, phone, created_at")
+    .eq("role", "teacher")
+    .order("name");
+
+  return (
+    <div>
+      {/* 페이지 헤더 */}
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-zinc-900">강사 목록</h1>
+        <p className="mt-1 text-sm text-zinc-500">
+          등록된 강사 <span className="font-semibold text-zinc-700">{teachers?.length ?? 0}</span>명
+        </p>
+      </div>
+
+      {!teachers || teachers.length === 0 ? (
+        <Card className="border-dashed p-16 text-center">
+          <p className="text-sm text-zinc-400">등록된 강사가 없습니다.</p>
+        </Card>
+      ) : (
+        <TableContainer>
+          <Table>
+            <thead>
+              <tr className="border-b border-zinc-100 bg-zinc-50">
+                <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">이름</th>
+                <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">이메일</th>
+                <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">전화번호</th>
+                <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">등록일</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-50">
+              {teachers.map((t) => (
+                <tr key={t.id} className="transition hover:bg-zinc-50">
+                  <td className="px-5 py-3.5">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-100 text-xs font-semibold text-purple-700">
+                        {t.name?.charAt(0) ?? "?"}
+                      </div>
+                      <span className="font-medium text-zinc-900">{t.name}</span>
+                    </div>
+                  </td>
+                  <td className="px-5 py-3.5 text-zinc-600">{t.email}</td>
+                  <td className="px-5 py-3.5 text-zinc-500">{t.phone ?? "—"}</td>
+                  <td className="px-5 py-3.5 text-zinc-400">
+                    {new Date(t.created_at).toLocaleDateString("ko-KR")}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </TableContainer>
+      )}
+    </div>
+  );
+}

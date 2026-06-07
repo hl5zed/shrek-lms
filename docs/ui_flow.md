@@ -48,7 +48,7 @@ app/
 │       ├── feedback/page.tsx            # 자녀 첨삭 결과
 │       └── growth/page.tsx             # 자녀 성장 추이
 │
-├── middleware.ts                         # 역할 기반 라우트 보호
+├── proxy.ts                              # 역할 기반 라우트 보호
 └── layout.tsx                            # 루트 레이아웃
 ```
 
@@ -119,30 +119,13 @@ parent  → /parent/dashboard
 ```
 components/
 ├── layout/
-│   ├── AdminLayout.tsx     # 관리자 사이드바 + 헤더
-│   ├── TeacherLayout.tsx   # 강사 사이드바 + 헤더
-│   ├── StudentLayout.tsx   # 학생 사이드바 + 헤더
-│   └── ParentLayout.tsx    # 학부모 사이드바 + 헤더
-├── ui/
-│   ├── Button.tsx
-│   ├── Badge.tsx           # 상태 뱃지 (제출완료, 첨삭대기, 미제출 등)
-│   ├── Card.tsx
-│   ├── Table.tsx
-│   └── Modal.tsx
-└── features/
-    ├── submission/
-    │   ├── SubmitForm.tsx   # 과제 제출 폼 (글자수 카운트 포함)
-    │   └── FileUpload.tsx   # 파일 업로드 컴포넌트
-    ├── feedback/
-    │   ├── FeedbackEditor.tsx  # 첨삭 작성 폼
-    │   └── ScoreInput.tsx      # 성장지표 점수 입력
-    └── growth/
-        └── GrowthChart.tsx     # 성장지표 막대 그래프
+│   ├── Sidebar.tsx         # 역할별 메뉴 사이드바
+│   └── LogoutButton.tsx    # 로그아웃 버튼
 ```
 
 ---
 
-## 미들웨어 처리 규칙 (middleware.ts)
+## 프록시 처리 규칙 (proxy.ts)
 
 ```typescript
 // 보호 경로 목록

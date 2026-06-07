@@ -15,7 +15,7 @@ export default function Home() {
 
         <div className="flex w-full flex-col gap-3 sm:flex-row sm:justify-center">
           <Link
-            href="/auth"
+            href="/login"
             className="flex h-12 w-full items-center justify-center rounded-full bg-zinc-900 px-6 text-sm font-semibold text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300 sm:w-auto sm:min-w-[160px]"
           >
             로그인하기

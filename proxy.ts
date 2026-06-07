@@ -1,8 +1,7 @@
 import { type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
-// Next.js 16부터 미들웨어(middleware)는 프록시(proxy)로 이름이 바뀌었습니다. 기능은 동일합니다.
-// 이 파일은 프로젝트 루트(app/ 과 같은 위치)에 있어야 모든 요청에 적용됩니다.
+// Next.js 16+ 에서 미들웨어 파일명은 proxy.ts 입니다.
 // 실제 인증/역할 라우팅 로직은 lib/supabase/middleware.ts 의 updateSession 에 있습니다.
 export async function proxy(request: NextRequest) {
   return updateSession(request);
