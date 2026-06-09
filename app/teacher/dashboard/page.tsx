@@ -16,10 +16,14 @@ export default async function TeacherDashboardPage() {
     .select(`
       id,
       submitted_at,
-      assignments ( title ),
+      assignments!inner (
+        title,
+        classes!inner ( teacher_id )
+      ),
       profiles ( name )
     `)
     .eq("status", "submitted")
+    .eq("assignments.classes.teacher_id", user!.id)
     .order("submitted_at", { ascending: false })
     .limit(10);
 

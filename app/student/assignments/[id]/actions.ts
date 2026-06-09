@@ -7,6 +7,8 @@ const MIN_TEXT_LENGTH = 50;
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
 const ALLOWED_MIME_TYPES = new Set(["image/jpeg", "image/png", "application/pdf"]);
 const ALLOWED_EXTENSIONS = [".jpg", ".jpeg", ".png", ".pdf"];
+// 파일 제출 로직은 이 파일에 통합되어 있습니다.
+// 별도 upload-action.ts는 사용하지 않습니다.
 
 type UploadFileMeta = {
   type: string;

@@ -86,6 +86,74 @@
 
 ---
 
+## 권한 침투 테스트: 직접 URL 변조 차단
+
+이 섹션은 RLS 적용 전/후 모두 사용할 수 있는 권한 회귀 테스트입니다.
+모든 테스트는 "로그인 계정 역할"과 "직접 입력한 URL"을 함께 기록합니다.
+
+상세 절차는 `docs/manual_permission_test_guide.md`를 참고하세요.
+
+### Teacher 권한 테스트
+
+- [ ] teacher A로 로그인한다.
+- [ ] teacher A 담당 반의 제출물 목록이 정상 조회되는지 확인한다.
+- [ ] teacher A 담당 반 학생의 제출물 상세 페이지에 정상 접근되는지 확인한다.
+- [ ] teacher B 담당 반 학생의 submission id를 URL에 직접 입력했을 때 접근이 차단되는지 확인한다.
+- [ ] 차단 시 `notFound()` 또는 404 화면으로 처리되는지 확인한다.
+- [ ] teacher dashboard에 타 교사 담당 반 제출물이 섞이지 않는지 확인한다.
+
+### Parent 권한 테스트
+
+- [ ] parent A로 로그인한다.
+- [ ] parent A의 자녀 과제 현황이 정상 조회되는지 확인한다.
+- [ ] parent A의 자녀 제출물/첨삭 상세가 정상 조회되는지 확인한다.
+- [ ] parent B의 자녀 submission id를 URL에 직접 입력했을 때 접근이 차단되는지 확인한다.
+- [ ] 자녀가 아닌 학생의 feedback/submission 상세가 노출되지 않는지 확인한다.
+- [ ] 자녀가 여러 명일 때 각 자녀의 데이터만 표시되는지 확인한다.
+
+### Student 권한 테스트
+
+- [ ] student A로 로그인한다.
+- [ ] student A가 본인 반 과제 목록을 정상 조회하는지 확인한다.
+- [ ] student A가 본인 반 과제 상세에 정상 접근하는지 확인한다.
+- [ ] 다른 반 assignment id를 URL에 직접 입력했을 때 접근이 차단되는지 확인한다.
+- [ ] 제출 생성 시 `student_id`가 로그인 사용자 id로 저장되는지 확인한다.
+- [ ] 다른 학생의 제출물을 수정할 수 없는지 확인한다.
+- [ ] 파일 제출 시 업로드 경로가 본인 제출 범위 안에서만 연결되는지 확인한다.
+
+### Admin 권한 테스트
+
+- [ ] admin으로 로그인한다.
+- [ ] 전체 학생/교사/학부모/반/과제/제출물 관리 화면 접근이 가능한지 확인한다.
+- [ ] admin 권한에서 teacher/parent/student 화면으로 잘못 리다이렉트되지 않는지 확인한다.
+- [ ] admin이 관리 화면에서 필요한 데이터를 조회할 수 있는지 확인한다.
+
+### 테스트 준비 데이터
+
+- admin 계정 1개
+- teacher A 계정 1개
+- teacher B 계정 1개
+- student A 계정 1개: teacher A 담당 반 소속
+- student B 계정 1개: teacher B 담당 반 소속
+- parent A 계정 1개: student A와 연결
+- parent B 계정 1개: student B와 연결
+- teacher A 반 과제 1개 이상
+- teacher B 반 과제 1개 이상
+- student A 제출물 1개 이상
+- student B 제출물 1개 이상
+- 각 제출물에 대한 feedback 1개 이상
+
+### 테스트 결과 기록표
+
+| 날짜 | 테스트 역할 | 테스트 항목 | 결과 | 이슈 | 확인자 |
+|---|---|---|---|---|---|
+|  | teacher | 타 교사 submission 직접 접근 차단 | PASS / FAIL |  |  |
+|  | parent | 타 자녀 submission 직접 접근 차단 | PASS / FAIL |  |  |
+|  | student | 타 반 assignment 직접 접근 차단 | PASS / FAIL |  |  |
+|  | admin | 관리자 전체 접근 확인 | PASS / FAIL |  |  |
+
+---
+
 ## 자주 막히는 포인트 체크
 
 | 증상 | 확인할 것 |

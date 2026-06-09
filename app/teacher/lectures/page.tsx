@@ -9,6 +9,7 @@ export default async function TeacherLecturesPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // 생성자(created_by) 기준이 아니라 담당 반(classes.teacher_id) 기준으로 조회합니다.
   const { data: lectures } = await supabase
     .from("lectures")
     .select(`
@@ -17,9 +18,9 @@ export default async function TeacherLecturesPage() {
       description,
       video_url,
       created_at,
-      classes ( name )
+      classes!inner ( name, teacher_id )
     `)
-    .eq("created_by", user!.id)
+    .eq("classes.teacher_id", user!.id)
     .order("created_at", { ascending: false });
 
   return (

@@ -1,5 +1,11 @@
 # rls_policy.md — Supabase RLS 정책
 
+> [중요] 이 문서는 현재 프로젝트의 **유일한 RLS 기준 문서**입니다.
+>
+> - 현재 스키마 기준: `profiles.id = auth.uid()`
+> - 별도 `students`, `teachers`, `parents` 테이블 전제 정책은 사용하지 않습니다.
+> - Supabase SQL Editor에서 실행하기 전에 반드시 `docs/database_schema.md`와 컬럼/관계를 대조하세요.
+
 이 파일은 Supabase SQL Editor에서 실행할 RLS 정책의 기준입니다.
 Cursor AI는 이 정책을 임의로 변경하거나 비활성화하지 않습니다.
 

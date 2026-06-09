@@ -24,10 +24,15 @@ export default async function SubmissionDetailPage({
       word_count_pure,
       status,
       submitted_at,
-      assignments ( title, description ),
+      assignments!inner (
+        title,
+        description,
+        classes!inner ( teacher_id )
+      ),
       profiles!student_id ( name )
     `)
     .eq("id", id)
+    .eq("assignments.classes.teacher_id", user!.id)
     .single();
 
   if (!submission) notFound();

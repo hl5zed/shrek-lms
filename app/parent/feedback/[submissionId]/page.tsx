@@ -10,6 +10,17 @@ export default async function ParentFeedbackDetailPage({
 }) {
   const { submissionId } = await params;
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // 학부모-자녀 연결을 먼저 확인해 URL 직접 접근을 차단합니다.
+  const { data: parentLinks } = await supabase
+    .from("parent_students")
+    .select("student_id")
+    .eq("parent_id", user!.id);
+  const childIds = (parentLinks ?? []).map((row) => row.student_id);
+  if (childIds.length === 0) notFound();
 
   const { data: submission } = await supabase
     .from("submissions")
@@ -23,6 +34,7 @@ export default async function ParentFeedbackDetailPage({
     `)
     .eq("id", submissionId)
     .eq("status", "reviewed")
+    .in("student_id", childIds)
     .single();
 
   if (!submission) notFound();

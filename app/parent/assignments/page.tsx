@@ -21,19 +21,34 @@ export default async function ParentAssignmentsPage() {
   // 자녀별 과제 제출 현황 수집
   const childData = await Promise.all(
     children.map(async (child) => {
-      const { data: assignments } = await supabase
+      const { data: assignmentsRaw } = await supabase
         .from("assignments")
         .select(`
           id,
           title,
           due_date,
-          classes!inner ( class_students!inner ( student_id ) ),
+          class_id,
           submissions ( id, status, student_id )
         `)
-        .eq("classes.class_students.student_id", child.id)
+        .in(
+          "class_id",
+          (
+            await supabase
+              .from("class_students")
+              .select("class_id")
+              .eq("student_id", child.id)
+          ).data?.map((row) => row.class_id) ?? []
+        )
         .order("due_date", { ascending: false });
 
-      return { child, assignments: assignments ?? [] };
+      // 안전하게 자녀 본인 제출물만 사용하도록 한 번 더 필터링합니다.
+      const assignments = (assignmentsRaw ?? []).map((asgn) => ({
+        ...asgn,
+        submissions: ((asgn.submissions as { id: string; status: string; student_id: string }[] | null) ?? [])
+          .filter((sub) => sub.student_id === child.id),
+      }));
+
+      return { child, assignments };
     })
   );
 

@@ -3,7 +3,12 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 
 // 강의 등록 — Server Action으로 lectures 테이블에 INSERT합니다.
-export default async function NewLecturePage() {
+export default async function NewLecturePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string }>;
+}) {
+  const { status } = await searchParams;
   const supabase = await createClient();
 
   const {
@@ -31,6 +36,18 @@ export default async function NewLecturePage() {
     const videoUrl = formData.get("video_url") as string;
     const classId = formData.get("class_id") as string;
 
+    // 생성 직전에도 class ownership(담당 반) 재검증을 수행합니다.
+    const { data: ownedClass } = await supabase
+      .from("classes")
+      .select("id")
+      .eq("id", classId)
+      .eq("teacher_id", user.id)
+      .maybeSingle();
+
+    if (!ownedClass) {
+      redirect("/teacher/lectures/new?status=forbidden");
+    }
+
     await supabase.from("lectures").insert({
       title,
       description: description || null,
@@ -56,6 +73,11 @@ export default async function NewLecturePage() {
       <div className="mt-4 mb-8">
         <h1 className="text-2xl font-bold text-zinc-900">강의 등록</h1>
         <p className="mt-1 text-sm text-zinc-500">새 강의를 등록합니다.</p>
+        {status === "forbidden" ? (
+          <p className="mt-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+            담당 반이 아닌 곳에는 강의를 등록할 수 없습니다.
+          </p>
+        ) : null}
       </div>
 
       <form action={createLecture} className="max-w-xl space-y-5">
