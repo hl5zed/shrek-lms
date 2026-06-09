@@ -1,4 +1,5 @@
 import { LmsMenuItem, LmsMenuKey } from "@/lib/lms/types";
+import LogoutButton from "@/components/auth/LogoutButton";
 
 type LmsTopbarProps = {
   activeMenu: LmsMenuKey;
@@ -37,6 +38,9 @@ export default function LmsTopbar({ activeMenu, menus, onToggleMobileMenu }: Lms
       >
         계
       </button>
+      <div className="lg:hidden">
+        <LogoutButton className="px-2 py-1 text-xs" />
+      </div>
     </header>
   );
 }

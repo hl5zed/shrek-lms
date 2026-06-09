@@ -5,15 +5,15 @@ import TodayBanner from "@/src/components/student/TodayBanner";
 import CourseItem from "@/src/components/student/CourseItem";
 import { studentData } from "@/src/lib/mock/studentData";
 
-export default function StudentDashboardPage() {
+export default function StudentHomePage() {
   return (
-    <StudentShell title="학생 홈" showGreeting>
+    <StudentShell title="학생 홈">
       <TodayBanner
         message={studentData.today.message}
         attendance={studentData.today.attendance}
       />
 
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+      <div className="grid grid-cols-3 gap-2">
         <StatCard label="출석률" value={`${studentData.stats.weeklyAttendanceRate}%`} />
         <StatCard label="제출률" value={`${studentData.stats.assignmentSubmitRate}%`} />
         <StatCard label="평균점수" value={`${studentData.stats.averageScore}점`} />
@@ -30,3 +30,4 @@ export default function StudentDashboardPage() {
     </StudentShell>
   );
 }
+

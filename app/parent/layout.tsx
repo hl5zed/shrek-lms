@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
+import LogoutButton from "@/components/auth/LogoutButton";
 
 // 학부모 영역 공통 레이아웃
 export default async function ParentLayout({
@@ -33,9 +34,12 @@ export default async function ParentLayout({
   return (
     <div className="flex min-h-screen flex-col bg-[var(--color-neutral-50)]">
       <header className="sticky top-0 z-10 border-b border-[var(--color-neutral-200)] bg-white px-4 py-3">
-        <p className="text-base font-semibold text-[var(--color-neutral-1000)]">
-          {profile.name ?? "학부모"} 님
-        </p>
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-base font-semibold text-[var(--color-neutral-1000)]">
+            {profile.name ?? "학부모"} 님
+          </p>
+          <LogoutButton className="px-2.5 py-1.5 text-xs" />
+        </div>
       </header>
 
       <main className="flex-1 overflow-y-auto px-4 py-5 pb-20">{children}</main>

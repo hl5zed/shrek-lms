@@ -1,61 +1,52 @@
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import Link from "next/link";
+import StudentShell from "@/src/components/student/StudentShell";
+import StudentCard from "@/src/components/student/StudentCard";
+import FeedbackItem from "@/src/components/student/FeedbackItem";
+import { getStudentFeedbackList } from "@/src/lib/student/feedback";
 
-// 학생 첨삭 결과 목록
 export default async function StudentFeedbackPage() {
   const supabase = await createClient();
-
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { data: submissions } = await supabase
-    .from("submissions")
-    .select(`
-      id,
-      submitted_at,
-      assignments ( title )
-    `)
-    .eq("student_id", user!.id)
-    .eq("status", "reviewed")
-    .order("submitted_at", { ascending: false });
+  if (!user) {
+    redirect("/login");
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (profile?.role !== "student") {
+    redirect("/login");
+  }
+
+  const result = await getStudentFeedbackList(user.id);
 
   return (
-    <div>
-      {/* 페이지 헤더 */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-zinc-900">첨삭 결과</h1>
-        <p className="mt-1 text-sm text-zinc-500">완료된 첨삭 목록입니다.</p>
-      </div>
-
-      {!submissions || submissions.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-zinc-200 bg-white p-16 text-center">
-          <p className="text-sm text-zinc-400">아직 완료된 첨삭이 없습니다.</p>
-        </div>
-      ) : (
-        <ul className="space-y-2">
-          {submissions.map((sub) => (
-            <li key={sub.id}>
-              <Link
-                href={`/student/feedback/${sub.id}`}
-                className="flex items-center justify-between rounded-xl border border-zinc-200 bg-white p-4 transition hover:border-blue-300 hover:shadow-sm"
-              >
-                <div>
-                  <p className="text-sm font-semibold text-zinc-900">
-                    {(sub.assignments as unknown as { title: string } | null)?.title ?? "과제"}
-                  </p>
-                  <p className="mt-0.5 text-xs text-zinc-400">
-                    {new Date(sub.submitted_at).toLocaleDateString("ko-KR")} 제출
-                  </p>
-                </div>
-                <span className="shrink-0 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700">
-                  첨삭완료
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+    <StudentShell title="첨삭 결과">
+      <StudentCard>
+        <h2 className="text-sm font-semibold text-[#06091F]">첨삭 리스트</h2>
+        {!result.ok ? (
+          <p className="mt-3 text-sm text-[#C03232]">
+            첨삭 목록을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.
+          </p>
+        ) : result.rows.length === 0 ? (
+          <p className="mt-3 text-sm text-[#6470BF]">
+            아직 제출한 답안이 없습니다. 먼저 과제를 제출하면 첨삭 결과를 볼 수 있습니다.
+          </p>
+        ) : (
+          <div className="mt-3 space-y-2">
+            {result.rows.map((row) => (
+              <FeedbackItem key={row.submissionId} {...row} />
+            ))}
+          </div>
+        )}
+      </StudentCard>
+    </StudentShell>
   );
 }

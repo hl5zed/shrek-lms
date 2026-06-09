@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getHomeByRole } from "@/lib/auth/role-redirect";
+import LogoutButton from "@/components/auth/LogoutButton";
 
 // 역할 미설정 계정 및 개발 테스트용 임시 대시보드 (Server Component)
 // 역할이 있는 사용자는 미들웨어가 역할별 대시보드로 리다이렉트합니다.
@@ -44,6 +45,9 @@ export default async function DashboardPage() {
           <p className="mt-4 text-red-600">
             profiles.role 이 설정되지 않았거나 조회할 수 없습니다. 관리자에게 문의해주세요.
           </p>
+        </div>
+        <div className="mt-5 flex justify-end">
+          <LogoutButton />
         </div>
       </section>
     </main>
