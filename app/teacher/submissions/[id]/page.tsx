@@ -75,6 +75,20 @@ export default async function SubmissionDetailPage({
         feedback.score_expression,
       ].some((score) => score != null)
   );
+  const areaCommentsRaw =
+    feedback?.area_comments && typeof feedback.area_comments === "object"
+      ? (feedback.area_comments as Record<string, unknown>)
+      : {};
+  const areaCommentReadingDefault =
+    typeof areaCommentsRaw["독해"] === "string" ? areaCommentsRaw["독해"] : "";
+  const areaCommentThinkingDefault =
+    typeof areaCommentsRaw["사고"] === "string" ? areaCommentsRaw["사고"] : "";
+  const areaCommentLogicDefault =
+    typeof areaCommentsRaw["논리"] === "string" ? areaCommentsRaw["논리"] : "";
+  const areaCommentStructureDefault =
+    typeof areaCommentsRaw["구성"] === "string" ? areaCommentsRaw["구성"] : "";
+  const areaCommentExpressionDefault =
+    typeof areaCommentsRaw["표현"] === "string" ? areaCommentsRaw["표현"] : "";
 
   async function saveFeedback(formData: FormData) {
     "use server";
@@ -91,6 +105,19 @@ export default async function SubmissionDetailPage({
     const scoreLogic = Number(formData.get("score_logic"));
     const scoreStructure = Number(formData.get("score_structure"));
     const scoreExpression = Number(formData.get("score_expression"));
+    const areaCommentReading = String(formData.get("area_comment_reading") ?? "").trim();
+    const areaCommentThinking = String(formData.get("area_comment_thinking") ?? "").trim();
+    const areaCommentLogic = String(formData.get("area_comment_logic") ?? "").trim();
+    const areaCommentStructure = String(formData.get("area_comment_structure") ?? "").trim();
+    const areaCommentExpression = String(formData.get("area_comment_expression") ?? "").trim();
+
+    // area_comments jsonb는 docs/database_schema.md 예시 키(독해/사고/논리/구성/표현) 형식으로 저장합니다.
+    const areaComments: Record<string, string> = {};
+    if (areaCommentReading) areaComments["독해"] = areaCommentReading;
+    if (areaCommentThinking) areaComments["사고"] = areaCommentThinking;
+    if (areaCommentLogic) areaComments["논리"] = areaCommentLogic;
+    if (areaCommentStructure) areaComments["구성"] = areaCommentStructure;
+    if (areaCommentExpression) areaComments["표현"] = areaCommentExpression;
 
     // feedbacks upsert (submission_id unique 제약 활용)
     await supabase.from("feedbacks").upsert({
@@ -102,6 +129,7 @@ export default async function SubmissionDetailPage({
       score_logic: scoreLogic,
       score_structure: scoreStructure,
       score_expression: scoreExpression,
+      area_comments: Object.keys(areaComments).length > 0 ? areaComments : null,
     }, { onConflict: "submission_id" });
 
     // 제출물 상태를 reviewed로 업데이트
@@ -203,6 +231,63 @@ export default async function SubmissionDetailPage({
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* 영역별 코멘트 */}
+        <div className="rounded-2xl border border-zinc-200 bg-white p-6">
+          <p className="mb-4 text-sm font-semibold text-zinc-800">영역별 코멘트 (선택)</p>
+          <div className="space-y-4">
+            <div>
+              <label className="mb-1 block text-sm font-medium text-zinc-700">독해</label>
+              <textarea
+                name="area_comment_reading"
+                rows={3}
+                defaultValue={areaCommentReadingDefault}
+                placeholder="독해 영역 코멘트를 입력하세요."
+                className="w-full rounded-xl border border-zinc-200 px-4 py-3 text-sm leading-relaxed outline-none transition focus:border-blue-500 focus:ring-3 focus:ring-blue-100"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-zinc-700">사고</label>
+              <textarea
+                name="area_comment_thinking"
+                rows={3}
+                defaultValue={areaCommentThinkingDefault}
+                placeholder="사고 영역 코멘트를 입력하세요."
+                className="w-full rounded-xl border border-zinc-200 px-4 py-3 text-sm leading-relaxed outline-none transition focus:border-blue-500 focus:ring-3 focus:ring-blue-100"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-zinc-700">논리</label>
+              <textarea
+                name="area_comment_logic"
+                rows={3}
+                defaultValue={areaCommentLogicDefault}
+                placeholder="논리 영역 코멘트를 입력하세요."
+                className="w-full rounded-xl border border-zinc-200 px-4 py-3 text-sm leading-relaxed outline-none transition focus:border-blue-500 focus:ring-3 focus:ring-blue-100"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-zinc-700">구성</label>
+              <textarea
+                name="area_comment_structure"
+                rows={3}
+                defaultValue={areaCommentStructureDefault}
+                placeholder="구성 영역 코멘트를 입력하세요."
+                className="w-full rounded-xl border border-zinc-200 px-4 py-3 text-sm leading-relaxed outline-none transition focus:border-blue-500 focus:ring-3 focus:ring-blue-100"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-zinc-700">표현</label>
+              <textarea
+                name="area_comment_expression"
+                rows={3}
+                defaultValue={areaCommentExpressionDefault}
+                placeholder="표현 영역 코멘트를 입력하세요."
+                className="w-full rounded-xl border border-zinc-200 px-4 py-3 text-sm leading-relaxed outline-none transition focus:border-blue-500 focus:ring-3 focus:ring-blue-100"
+              />
+            </div>
           </div>
         </div>
 
