@@ -4,17 +4,14 @@ import LogoutButton from "./LogoutButton";
 type NavItem = {
   label: string;
   href: string;
+  badge?: {
+    type: "new" | "count-red" | "count-amber";
+    value?: number;
+  };
+  group?: "운영 관리" | "강의 콘텐츠" | "첨삭 & 성장" | "기타";
 };
 
-// 역할별 네비게이션 메뉴 정의
-const NAV_ITEMS: Record<string, NavItem[]> = {
-  admin: [
-    { label: "대시보드", href: "/admin/dashboard" },
-    { label: "강사 관리", href: "/admin/teachers" },
-    { label: "학생 관리", href: "/admin/students" },
-    { label: "반 관리", href: "/admin/classes" },
-    { label: "학부모 관리", href: "/admin/parents" },
-  ],
+const NAV_ITEMS: Record<"teacher" | "student" | "parent", NavItem[]> = {
   teacher: [
     { label: "대시보드", href: "/teacher/dashboard" },
     { label: "강의", href: "/teacher/lectures" },
@@ -35,6 +32,13 @@ const NAV_ITEMS: Record<string, NavItem[]> = {
   ],
 };
 
+const ADMIN_GROUPS: Array<"운영 관리" | "강의 콘텐츠" | "첨삭 & 성장" | "기타"> = [
+  "운영 관리",
+  "강의 콘텐츠",
+  "첨삭 & 성장",
+  "기타",
+];
+
 const ROLE_LABEL: Record<string, string> = {
   admin: "관리자",
   teacher: "강사",
@@ -42,7 +46,6 @@ const ROLE_LABEL: Record<string, string> = {
   parent: "학부모",
 };
 
-// 역할별 아바타 색상
 const ROLE_COLOR: Record<string, string> = {
   admin: "bg-purple-100 text-purple-700",
   teacher: "bg-blue-100 text-blue-700",
@@ -53,16 +56,146 @@ const ROLE_COLOR: Record<string, string> = {
 type SidebarProps = {
   role: string;
   name: string;
+  currentPath?: string;
+  studentNewCount?: number;
+  pendingFeedbackCount?: number;
 };
 
-// 공통 사이드바 (Server Component)
-export default function Sidebar({ role, name }: SidebarProps) {
-  const items = NAV_ITEMS[role] ?? [];
-  const avatarColor = ROLE_COLOR[role] ?? "bg-zinc-100 text-zinc-700";
+function getAdminNavItems(studentNewCount?: number, pendingFeedbackCount?: number): NavItem[] {
+  return [
+    { label: "대시보드", href: "/admin/dashboard", group: "운영 관리" },
+    {
+      label: "학생회원 관리",
+      href: "/admin/students",
+      group: "운영 관리",
+      badge: (studentNewCount ?? 0) > 0 ? { type: "count-red", value: studentNewCount } : undefined,
+    },
+    { label: "강사 관리", href: "/admin/teachers", group: "운영 관리" },
+    { label: "반 관리", href: "/admin/classes", group: "운영 관리" },
+    { label: "학부모 관리", href: "/admin/parents", group: "운영 관리" },
+    { label: "수업기록", href: "/admin/records", group: "운영 관리", badge: { type: "new" } },
 
+    { label: "강의 관리", href: "/admin/lectures", group: "강의 콘텐츠", badge: { type: "new" } },
+    { label: "과제 관리", href: "/admin/assignments", group: "강의 콘텐츠" },
+    { label: "과제 제출", href: "/admin/submissions", group: "강의 콘텐츠" },
+
+    {
+      label: "첨삭 관리",
+      href: "/admin/feedback",
+      group: "첨삭 & 성장",
+      badge: (pendingFeedbackCount ?? 0) > 0 ? { type: "count-amber", value: pendingFeedbackCount } : undefined,
+    },
+    { label: "성장지표", href: "/admin/growth", group: "첨삭 & 성장" },
+    { label: "포트폴리오", href: "/admin/portfolio", group: "첨삭 & 성장" },
+    { label: "학부모 리포트", href: "/admin/reports", group: "첨삭 & 성장" },
+
+    { label: "게시판", href: "/admin/board", group: "기타" },
+    { label: "설정", href: "/admin/settings", group: "기타" },
+  ];
+}
+
+function isActivePath(pathname: string, href: string): boolean {
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+function renderBadge(badge?: NavItem["badge"]) {
+  if (!badge) return null;
+  if (badge.type === "new") {
+    return (
+      <span className="ml-auto rounded-full bg-indigo-500 px-1.5 py-[1px] text-[9px] font-bold text-white">
+        NEW
+      </span>
+    );
+  }
+  if (!badge.value || badge.value <= 0) return null;
+  if (badge.type === "count-red") {
+    return (
+      <span className="ml-auto inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+        {badge.value > 99 ? "99+" : badge.value}
+      </span>
+    );
+  }
+  return (
+    <span className="ml-auto inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-400 px-1 text-[10px] font-bold text-white">
+      {badge.value > 99 ? "99+" : badge.value}
+    </span>
+  );
+}
+
+export default function Sidebar({
+  role,
+  name,
+  currentPath = "",
+  studentNewCount,
+  pendingFeedbackCount,
+}: SidebarProps) {
+  const avatarColor = ROLE_COLOR[role] ?? "bg-zinc-100 text-zinc-700";
+  const initial = name.charAt(0);
+
+  if (role === "admin") {
+    const items = getAdminNavItems(studentNewCount, pendingFeedbackCount);
+    return (
+      <aside className="flex h-screen w-60 shrink-0 flex-col border-r border-zinc-200 bg-white">
+        <div className="border-b border-zinc-200 px-[14px] pb-3 pt-3.5">
+          <div className="flex items-center gap-2">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-600 text-[13px] font-bold text-white">
+              S
+            </div>
+            <div>
+              <p className="text-[13px] font-bold text-zinc-900">슈렉샘 LMS</p>
+              <p className="text-[10px] text-zinc-400">논술 성장관리 플랫폼</p>
+            </div>
+          </div>
+        </div>
+
+        <nav className="flex min-h-0 flex-1 flex-col overflow-y-auto px-2 py-2">
+          {ADMIN_GROUPS.map((group) => (
+            <div key={group} className="mb-0.5">
+              <p className="px-2 pb-1 pt-1.5 text-[11px] font-medium text-zinc-400">{group}</p>
+              <div className="space-y-0.5">
+                {items
+                  .filter((item) => item.group === group)
+                  .map((item) => {
+                    const isActive = isActivePath(currentPath, item.href);
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={`flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[12.5px] transition ${
+                          isActive
+                            ? "bg-indigo-50 font-bold text-indigo-600"
+                            : "text-zinc-600 hover:bg-zinc-50"
+                        }`}
+                      >
+                        <span className="truncate">{item.label}</span>
+                        {renderBadge(item.badge)}
+                      </Link>
+                    );
+                  })}
+              </div>
+            </div>
+          ))}
+        </nav>
+
+        <div className="border-t border-zinc-200 px-3 py-2.5">
+          <div className="flex items-center gap-1.5">
+            <div className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-indigo-50 text-[11px] font-bold text-indigo-600">
+              {initial}
+            </div>
+            <div>
+              <p className="text-[11px] font-bold text-zinc-900">{name}</p>
+              <p className="text-[10px] text-zinc-400">{ROLE_LABEL[role] ?? role}</p>
+            </div>
+          </div>
+          <LogoutButton />
+        </div>
+      </aside>
+    );
+  }
+
+  const items = NAV_ITEMS[role as keyof typeof NAV_ITEMS] ?? [];
   return (
     <aside className="flex h-screen w-60 shrink-0 flex-col border-r border-zinc-200 bg-white">
-      {/* 서비스 로고 영역 */}
       <div className="flex h-16 items-center gap-2.5 border-b border-zinc-100 px-5">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
           <span className="text-xs font-bold text-white">논</span>
@@ -73,24 +206,26 @@ export default function Sidebar({ role, name }: SidebarProps) {
         </div>
       </div>
 
-      {/* 네비게이션 */}
       <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-3 py-4">
         {items.map((item) => (
           <Link
             key={item.href}
             href={item.href}
-            className="flex items-center rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-50 hover:text-zinc-900"
+            className={`flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+              isActivePath(currentPath, item.href)
+                ? "bg-zinc-100 text-zinc-900"
+                : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900"
+            }`}
           >
             {item.label}
           </Link>
         ))}
       </nav>
 
-      {/* 사용자 정보 + 로그아웃 */}
       <div className="border-t border-zinc-100 p-3">
         <div className="flex items-center gap-3 rounded-lg px-2 py-2">
           <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${avatarColor}`}>
-            {name.charAt(0)}
+            {initial}
           </div>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold text-zinc-800">{name}</p>

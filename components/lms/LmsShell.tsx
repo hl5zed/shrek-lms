@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { lmsMockData } from "@/lib/lms/mock-data";
 import { LmsMenuKey } from "@/lib/lms/types";
+import type { AdminDashboardData } from "@/components/admin/AdminDashboardContent";
 import LmsSidebar from "./LmsSidebar";
 import LmsTopbar from "./LmsTopbar";
 import DashboardPanel from "./panels/DashboardPanel";
@@ -21,9 +22,14 @@ import SettingsPanel from "./panels/SettingsPanel";
 type LmsShellProps = {
   initialMenu?: LmsMenuKey;
   fullscreen?: boolean;
+  dashboardData?: AdminDashboardData;
 };
 
-export default function LmsShell({ initialMenu = "dashboard", fullscreen = false }: LmsShellProps) {
+export default function LmsShell({
+  initialMenu = "dashboard",
+  fullscreen = false,
+  dashboardData,
+}: LmsShellProps) {
   const [activeMenu, setActiveMenu] = useState<LmsMenuKey>(initialMenu);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const data = lmsMockData;
@@ -41,7 +47,18 @@ export default function LmsShell({ initialMenu = "dashboard", fullscreen = false
   const panel = useMemo(() => {
     switch (activeMenu) {
       case "dashboard":
-        return <DashboardPanel data={data} />;
+        return (
+          <DashboardPanel
+            data={
+              dashboardData ?? {
+                studentCount: 0,
+                pendingFeedbackCount: 0,
+                weeklySubmissionRate: 0,
+                pendingFeedbackItems: [],
+              }
+            }
+          />
+        );
       case "students":
         return <StudentsPanel data={data} />;
       case "class-records":
@@ -65,9 +82,20 @@ export default function LmsShell({ initialMenu = "dashboard", fullscreen = false
       case "settings":
         return <SettingsPanel />;
       default:
-        return <DashboardPanel data={data} />;
+        return (
+          <DashboardPanel
+            data={
+              dashboardData ?? {
+                studentCount: 0,
+                pendingFeedbackCount: 0,
+                weeklySubmissionRate: 0,
+                pendingFeedbackItems: [],
+              }
+            }
+          />
+        );
     }
-  }, [activeMenu, data]);
+  }, [activeMenu, dashboardData, data]);
 
   return (
     <div

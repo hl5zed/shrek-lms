@@ -23,5 +23,33 @@ export default async function AdminLayout({
 
   if (profile?.role !== "admin") redirect("/login");
 
-  return <AdminLayoutFrame name={profile.name ?? "관리자"}>{children}</AdminLayoutFrame>;
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const thirtyDaysAgoIso = thirtyDaysAgo.toISOString();
+
+  const [{ count: studentNewCountRaw, error: studentCountError }, { count: pendingFeedbackCountRaw, error: pendingCountError }] =
+    await Promise.all([
+      supabase
+        .from("profiles")
+        .select("id", { count: "exact", head: true })
+        .eq("role", "student")
+        .gte("created_at", thirtyDaysAgoIso),
+      supabase
+        .from("submissions")
+        .select("id", { count: "exact", head: true })
+        .neq("status", "reviewed"),
+    ]);
+
+  const studentNewCount = studentCountError ? undefined : (studentNewCountRaw ?? 0);
+  const pendingFeedbackCount = pendingCountError ? undefined : (pendingFeedbackCountRaw ?? 0);
+
+  return (
+    <AdminLayoutFrame
+      name={profile.name ?? "관리자"}
+      studentNewCount={studentNewCount}
+      pendingFeedbackCount={pendingFeedbackCount}
+    >
+      {children}
+    </AdminLayoutFrame>
+  );
 }

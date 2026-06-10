@@ -6,21 +6,27 @@ import TopHeader from "@/components/layout/TopHeader";
 
 type AdminLayoutFrameProps = {
   name: string;
+  studentNewCount?: number;
+  pendingFeedbackCount?: number;
   children: React.ReactNode;
 };
 
-// /admin/dashboard 에서는 LMS Shell 전용 전체 화면을 보여주기 위해
-// 기존 관리자 래퍼(사이드바/상단헤더)를 생략합니다.
-export default function AdminLayoutFrame({ name, children }: AdminLayoutFrameProps) {
+export default function AdminLayoutFrame({
+  name,
+  studentNewCount,
+  pendingFeedbackCount,
+  children,
+}: AdminLayoutFrameProps) {
   const pathname = usePathname();
-
-  if (pathname === "/admin/dashboard") {
-    return <>{children}</>;
-  }
-
   return (
     <div className="flex h-screen bg-[var(--color-neutral-50)]">
-      <Sidebar role="admin" name={name} />
+      <Sidebar
+        role="admin"
+        name={name}
+        currentPath={pathname}
+        studentNewCount={studentNewCount}
+        pendingFeedbackCount={pendingFeedbackCount}
+      />
       <div className="flex min-w-0 flex-1 flex-col">
         <TopHeader
           title="관리자"
