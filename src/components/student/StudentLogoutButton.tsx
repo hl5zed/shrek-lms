@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { IconLoader2, IconLogout2 } from "@tabler/icons-react";
-import { supabase } from "@/lib/supabase/client";
+import { logoutWithRedirect } from "@/lib/auth/logout";
 
 export default function StudentLogoutButton() {
   const router = useRouter();
@@ -12,17 +12,7 @@ export default function StudentLogoutButton() {
   async function handleLogout() {
     if (isLoading) return;
     setIsLoading(true);
-
-    const { error } = await supabase.auth.signOut();
-
-    if (error) {
-      console.error("학생 로그아웃 실패:", error);
-      setIsLoading(false);
-      return;
-    }
-
-    router.replace("/login");
-    router.refresh();
+    await logoutWithRedirect(router);
   }
 
   return (

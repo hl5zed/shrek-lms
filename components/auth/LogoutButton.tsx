@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase/client";
+import { logoutWithRedirect } from "@/lib/auth/logout";
 
 type LogoutButtonProps = {
   className?: string;
@@ -19,19 +19,7 @@ export default function LogoutButton({
   async function handleLogout() {
     if (isLoading) return;
     setIsLoading(true);
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error("로그아웃 실패:", error);
-        setIsLoading(false);
-        return;
-      }
-      router.replace("/login");
-      router.refresh();
-    } catch (error) {
-      console.error("로그아웃 중 예외 발생:", error);
-      setIsLoading(false);
-    }
+    await logoutWithRedirect(router);
   }
 
   const baseClass =
