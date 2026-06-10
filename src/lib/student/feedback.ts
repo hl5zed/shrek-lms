@@ -43,7 +43,7 @@ type SubmissionJoinRow = {
 type FeedbackRow = {
   submission_id: string;
   comment: string | null;
-  area_comments: Record<string, string> | null;
+  area_comments: unknown;
   score_reading: number | null;
   score_thinking: number | null;
   score_logic: number | null;
@@ -51,6 +51,17 @@ type FeedbackRow = {
   score_expression: number | null;
   updated_at: string | null;
 };
+
+function normalizeAreaComments(value: unknown): Record<string, string> {
+  if (!value || typeof value !== "object") return {};
+  const normalized: Record<string, string> = {};
+  Object.entries(value as Record<string, unknown>).forEach(([key, item]) => {
+    if (typeof item === "string" && item.trim().length > 0) {
+      normalized[key] = item;
+    }
+  });
+  return normalized;
+}
 
 export async function getStudentFeedbackList(userId: string): Promise<{
   ok: boolean;
@@ -146,7 +157,7 @@ export async function getStudentFeedbackDetailBySubmission(
       feedback: typedFeedback
         ? {
             comment: typedFeedback.comment,
-            areaComments: typedFeedback.area_comments ?? {},
+            areaComments: normalizeAreaComments(typedFeedback.area_comments),
             scoreReading: typedFeedback.score_reading,
             scoreThinking: typedFeedback.score_thinking,
             scoreLogic: typedFeedback.score_logic,

@@ -40,6 +40,13 @@ export default async function StudentFeedbackDetailByIdPage({
   const hasAreaComments = Boolean(
     row.feedback?.areaComments && Object.keys(row.feedback.areaComments).length > 0
   );
+  const orderedAreaComments = [
+    { label: "독해", value: row.feedback?.areaComments?.["독해"] ?? "" },
+    { label: "사고", value: row.feedback?.areaComments?.["사고"] ?? "" },
+    { label: "논리", value: row.feedback?.areaComments?.["논리"] ?? "" },
+    { label: "구성", value: row.feedback?.areaComments?.["구성"] ?? "" },
+    { label: "표현", value: row.feedback?.areaComments?.["표현"] ?? "" },
+  ].filter((item) => item.value.trim().length > 0);
   const hasAnyScore = Boolean(
     row.feedback &&
       [
@@ -96,19 +103,21 @@ export default async function StudentFeedbackDetailByIdPage({
         </StudentCard>
       ) : null}
 
-      {row.feedback?.areaComments && Object.keys(row.feedback.areaComments).length > 0 ? (
-        <StudentCard>
-          <h3 className="text-sm font-semibold text-[#06091F]">문장별/영역별 코멘트</h3>
+      <StudentCard>
+        <h3 className="text-sm font-semibold text-[#06091F]">영역별 코멘트</h3>
+        {orderedAreaComments.length > 0 ? (
           <div className="mt-3 space-y-2">
-            {Object.entries(row.feedback.areaComments).map(([key, value]) => (
-              <div key={key} className="rounded-lg border border-[#EAEDFA] p-3">
-                <p className="text-xs font-semibold text-[#4A55A8]">{key}</p>
-                <p className="mt-1 text-sm text-[#161D55]">{value}</p>
+            {orderedAreaComments.map((item) => (
+              <div key={item.label} className="rounded-lg border border-[#EAEDFA] p-3">
+                <p className="text-xs font-semibold text-[#4A55A8]">{item.label}</p>
+                <p className="mt-1 text-sm text-[#161D55]">{item.value}</p>
               </div>
             ))}
           </div>
-        </StudentCard>
-      ) : null}
+        ) : (
+          <p className="mt-3 text-sm text-[#A86A00]">영역별 코멘트가 없습니다.</p>
+        )}
+      </StudentCard>
 
       <StudentCard>
         <h3 className="text-sm font-semibold text-[#06091F]">제출 답안</h3>

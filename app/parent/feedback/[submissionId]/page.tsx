@@ -49,6 +49,33 @@ export default async function ParentFeedbackDetailPage({
 
   const hasSubmissionContent = Boolean(submission.content_text?.trim());
   const hasFeedbackComment = Boolean(feedback.comment?.trim());
+  const areaCommentsRaw =
+    feedback.area_comments && typeof feedback.area_comments === "object"
+      ? (feedback.area_comments as Record<string, unknown>)
+      : {};
+  const orderedAreaComments = [
+    {
+      label: "독해",
+      value: typeof areaCommentsRaw["독해"] === "string" ? areaCommentsRaw["독해"] : "",
+    },
+    {
+      label: "사고",
+      value: typeof areaCommentsRaw["사고"] === "string" ? areaCommentsRaw["사고"] : "",
+    },
+    {
+      label: "논리",
+      value: typeof areaCommentsRaw["논리"] === "string" ? areaCommentsRaw["논리"] : "",
+    },
+    {
+      label: "구성",
+      value: typeof areaCommentsRaw["구성"] === "string" ? areaCommentsRaw["구성"] : "",
+    },
+    {
+      label: "표현",
+      value: typeof areaCommentsRaw["표현"] === "string" ? areaCommentsRaw["표현"] : "",
+    },
+  ].filter((item) => item.value.trim().length > 0);
+  const hasAreaComments = orderedAreaComments.length > 0;
   const hasAnyScore = [
     feedback.score_reading,
     feedback.score_thinking,
@@ -56,7 +83,7 @@ export default async function ParentFeedbackDetailPage({
     feedback.score_structure,
     feedback.score_expression,
   ].some((score) => score !== null && score !== undefined);
-  const hasFeedbackDetail = hasFeedbackComment || hasAnyScore;
+  const hasFeedbackDetail = hasFeedbackComment || hasAnyScore || hasAreaComments;
   const assignmentTitleRaw = (submission.assignments as unknown as { title?: string } | null)?.title;
   const assignmentTitle =
     typeof assignmentTitleRaw === "string" && assignmentTitleRaw.trim().length > 0
@@ -138,6 +165,23 @@ export default async function ParentFeedbackDetailPage({
         <p className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-700">
           {feedback.comment || "코멘트가 없습니다."}
         </p>
+      </div>
+
+      {/* 영역별 코멘트 */}
+      <div className="mb-5 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <p className="mb-3 text-sm font-semibold text-zinc-800">영역별 코멘트</p>
+        {orderedAreaComments.length > 0 ? (
+          <div className="space-y-2">
+            {orderedAreaComments.map((item) => (
+              <div key={item.label} className="rounded-lg border border-zinc-100 p-3">
+                <p className="text-xs font-semibold text-zinc-500">{item.label}</p>
+                <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-zinc-700">{item.value}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-[#A86A00]">영역별 코멘트가 없습니다.</p>
+        )}
       </div>
 
       {/* 자녀 답안 */}
