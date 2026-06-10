@@ -146,6 +146,24 @@ create table feedbacks (
 
 ---
 
+### feedback_comments (첨삭 코멘트 확장)
+
+```sql
+create table feedback_comments (
+  id            uuid primary key default gen_random_uuid(),
+  submission_id uuid not null references submissions(id) on delete cascade,
+  teacher_id    uuid references profiles(id),
+  comment       text not null,
+  created_at    timestamptz not null default now()
+);
+```
+
+> 실제 운영 DB 확인 기준:
+> - `submission_id`로 제출물에 직접 연결됨 (`feedback_id` 아님)
+> - 현재 정책 백업 기준으로 SELECT 정책만 존재
+
+---
+
 ## 확장 테이블 (Phase 5 이후 추가 예정)
 
 아래 테이블은 MVP 완성 후 단계적으로 추가합니다.
