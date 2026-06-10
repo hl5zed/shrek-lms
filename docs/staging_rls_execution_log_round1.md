@@ -650,6 +650,36 @@ rollback 필요 여부: 불필요
 
 ---
 
+## 10-1. lectures Round 1 실행 확정 기록
+
+실행 요약:
+
+- [A] 정책 백업 완료  
+  - 적용 전 확인된 `lectures` 정책:
+    - `admin_all_lectures`
+    - `lectures: admin/teacher INSERT`
+    - `lectures: 로그인 사용자 조회`
+    - `student_class_lectures`
+    - `teacher_own_lectures`
+- [C] 롤백 1회 수행 후 [B] 재적용 완료
+- 최종 정책 상태:
+  - `lectures_select_admin_staging`
+  - `lectures_select_teacher_class_staging`
+  - `lectures_select_student_class_staging`
+  - `lectures_insert_teacher_class_staging`
+  - `lectures_update_teacher_class_staging`
+  - 과허용 `SELECT` 정책(`lectures: 로그인 사용자 조회`) 제거 확인
+- 적용 후 기준선 QA:
+  - Playwright 기준선 5개 시나리오(localhost) 전체 PASS
+
+발견 사항 (Round 2 이관):
+
+- 기존 정책 `lectures: admin/teacher INSERT`는 class ownership 검증 없이
+  admin/teacher 전체 INSERT를 허용하는 형태로 확인됨.
+- 해당 정책은 Round 2 교체/정리 대상으로 분류한다.
+
+---
+
 ## 11. production 반영 전 메모
 
 이 Round 1 staging 실행 기록은 production 반영 근거의 일부일 뿐입니다.
