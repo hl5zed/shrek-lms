@@ -226,6 +226,7 @@ test.describe("Round 1 staging baseline QA", () => {
   });
 
   test("admin 로그인 및 /admin/* 접근", async ({ page }) => {
+    test.setTimeout(90000);
     const watch = installConsoleAndNetworkWatch(page);
     const credential = loadCredential("admin");
 

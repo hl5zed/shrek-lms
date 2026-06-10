@@ -309,3 +309,50 @@ production 반영 여부는 이 로그의 PASS 결과를 근거로 별도 판단
 
 1. `.env.local`의 `STAGING_BASE_URL`을 실제 접속 가능한 staging URL로 교체
 2. 동일 스펙 재실행 후 PASS/FAIL 재기록
+
+---
+
+## 13. 로컬 기준선 재실행
+
+| 항목 | 내용 |
+| --- | --- |
+| 실행 날짜 | 2026-06-11 |
+| 실행 시각 | 2026-06-11 06:21 (UTC+7) |
+| 실행 환경 | local (`http://localhost:3000`) |
+| 실행 명령 | `npm run test:e2e:staging-baseline` |
+| 대상 스펙 | `tests/e2e/staging-baseline.spec.ts` |
+
+### 실행 전 설정 변경
+
+- `.env.local`의 `STAGING_BASE_URL`을 `http://localhost:3000`으로 변경
+- `localhost:3000` 응답 확인: `200 OK`
+
+### 1차 실행 결과
+
+- 결과: 4 PASS / 1 FAIL
+- FAIL 항목:
+  - `admin 로그인 및 /admin/* 접근`
+  - 원인: 테스트 타임아웃(기본 30초) 초과
+  - 분류: 테스트 코드 문제
+  - 비고: 관리자 케이스에서 신규 admin 화면 검증이 추가되어 실행 시간이 증가함
+
+### 테스트 코드 보정
+
+- 앱 코드 수정 없이 스펙만 보정:
+  - `admin` 테스트에 `test.setTimeout(90000)` 추가
+
+### 2차 실행 최종 결과
+
+- 결과: 5 PASS / 0 FAIL
+- PASS 목록:
+  1. admin 로그인 및 `/admin/*` 접근 (신규 admin 페이지 포함)
+  2. teacher A 로그인 및 핵심 화면 접근
+  3. student A 로그인 및 핵심 화면 접근
+  4. parent A 로그인 및 핵심 화면 접근
+  5. logged-out 보호 페이지 접근 차단
+
+### 최종 분류
+
+- 테스트 코드 문제: 있음 (타임아웃 부족, 스펙 보정 후 해소)
+- 앱 버그: 없음
+- 데이터/계정 문제: 없음 (local 기준 정상 로그인/접근 확인)
