@@ -41,7 +41,10 @@ export default async function TeacherLecturesPage() {
 
       {!lectures || lectures.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-zinc-200 bg-white p-16 text-center">
-          <p className="text-sm text-zinc-400">등록된 강의가 없습니다.</p>
+          <p className="text-sm text-zinc-500">아직 등록된 강의가 없습니다.</p>
+          <p className="mt-1 text-xs text-zinc-400">
+            강의를 등록해 학생들이 학습할 콘텐츠를 안내해 주세요.
+          </p>
           <Link
             href="/teacher/lectures/new"
             className="mt-4 inline-block text-sm font-medium text-blue-600 hover:text-blue-700"

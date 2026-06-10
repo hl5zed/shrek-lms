@@ -20,6 +20,7 @@ export default async function SubmissionDetailPage({
     .select(`
       id,
       content_text,
+      file_urls,
       word_count,
       word_count_pure,
       status,
@@ -37,12 +38,43 @@ export default async function SubmissionDetailPage({
 
   if (!submission) notFound();
 
+  const assignmentTitleRaw = (submission.assignments as unknown as { title?: string } | null)?.title;
+  const assignmentTitle =
+    typeof assignmentTitleRaw === "string" && assignmentTitleRaw.trim().length > 0
+      ? assignmentTitleRaw
+      : "과제 정보를 불러오지 못했습니다.";
+  const studentNameRaw = (submission.profiles as unknown as { name?: string } | null)?.name;
+  const studentName =
+    typeof studentNameRaw === "string" && studentNameRaw.trim().length > 0
+      ? studentNameRaw
+      : "학생 정보를 불러오지 못했습니다.";
+  const contentText = typeof submission.content_text === "string" ? submission.content_text : "";
+  const hasContentText = contentText.trim().length > 0;
+  const fileUrls = Array.isArray(submission.file_urls) ? submission.file_urls : [];
+  const hasFiles = fileUrls.length > 0;
+  const submittedAtText = submission.submitted_at
+    ? new Date(submission.submitted_at).toLocaleDateString("ko-KR")
+    : "제출 시각이 확인되지 않습니다.";
+
   // 기존 첨삭 조회
   const { data: feedback } = await supabase
     .from("feedbacks")
     .select("*")
     .eq("submission_id", id)
     .single();
+
+  const feedbackComment = typeof feedback?.comment === "string" ? feedback.comment : "";
+  const hasFeedbackComment = feedbackComment.trim().length > 0;
+  const hasAnyScore = Boolean(
+    feedback &&
+      [
+        feedback.score_reading,
+        feedback.score_thinking,
+        feedback.score_logic,
+        feedback.score_structure,
+        feedback.score_expression,
+      ].some((score) => score != null)
+  );
 
   async function saveFeedback(formData: FormData) {
     "use server";
@@ -103,7 +135,7 @@ export default async function SubmissionDetailPage({
       <div className="mt-4 mb-6">
         <div className="flex items-start gap-3">
           <h1 className="text-2xl font-bold text-zinc-900">
-            {(submission.assignments as unknown as { title: string } | null)?.title ?? "과제"}
+            {assignmentTitle}
           </h1>
           <span
             className={`mt-1 shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${
@@ -116,9 +148,9 @@ export default async function SubmissionDetailPage({
           </span>
         </div>
         <p className="mt-1 text-sm text-zinc-500">
-          {(submission.profiles as unknown as { name: string } | null)?.name} ·{" "}
+          {studentName} ·{" "}
           {submission.word_count}자 (공백 제외 {submission.word_count_pure}자) ·{" "}
-          {new Date(submission.submitted_at).toLocaleDateString("ko-KR")} 제출
+          {submittedAtText}
         </p>
       </div>
 
@@ -126,8 +158,16 @@ export default async function SubmissionDetailPage({
       <div className="mb-8 rounded-2xl border border-zinc-200 bg-zinc-50 p-6">
         <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-zinc-400">학생 답안</p>
         <p className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-800">
-          {submission.content_text}
+          {hasContentText ? contentText : "제출 답안이 없습니다."}
         </p>
+        <p className="mt-3 text-xs text-zinc-500">
+          첨부 파일: {hasFiles ? `${fileUrls.length}개` : "첨부 파일이 없습니다."}
+        </p>
+        {!hasContentText && !hasFiles ? (
+          <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
+            일부 정보를 불러오지 못했습니다. 필요한 경우 담당 선생님 또는 관리자에게 문의해 주세요.
+          </p>
+        ) : null}
       </div>
 
       {/* 첨삭 폼 */}
@@ -180,6 +220,17 @@ export default async function SubmissionDetailPage({
             className="w-full rounded-xl border border-zinc-200 px-4 py-3 text-sm leading-relaxed outline-none transition focus:border-blue-500 focus:ring-3 focus:ring-blue-100"
           />
         </div>
+
+        {feedback && !hasAnyScore ? (
+          <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">
+            점수는 아직 입력되지 않았습니다.
+          </p>
+        ) : null}
+        {feedback && !hasFeedbackComment ? (
+          <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">
+            코멘트가 없습니다.
+          </p>
+        ) : null}
 
         <button
           type="submit"

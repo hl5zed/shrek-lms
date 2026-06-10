@@ -36,7 +36,7 @@ export default async function LoginPage() {
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600">
             <span className="text-xl font-bold text-white">논</span>
           </div>
-          <h1 className="text-2xl font-bold text-zinc-900">논술마루 LMS</h1>
+          <h1 className="text-2xl font-bold text-zinc-900">슈렉샘 논술 LMS</h1>
           <p className="mt-1.5 text-sm text-zinc-500">
             강의·과제·첨삭·성장을 한곳에서 관리합니다
           </p>
@@ -48,7 +48,7 @@ export default async function LoginPage() {
         </div>
 
         <p className="mt-6 text-center text-xs text-zinc-400">
-          슈렉샘 논술 — 이메일·비밀번호 로그인
+          슈렉샘 논술 LMS — 이메일·비밀번호 로그인
         </p>
       </div>
     </main>

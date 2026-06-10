@@ -72,7 +72,7 @@ export default async function AdminStudentsPage({
       {!students || students.length === 0 ? (
         <Card className="border-dashed p-16 text-center">
           <p className="text-sm text-zinc-400">
-            {q || classId ? "검색 조건에 맞는 학생이 없습니다." : "아직 등록된 학생이 없습니다."}
+            {q || classId ? "검색 조건에 맞는 학생이 없습니다." : "아직 등록된 학생이 없습니다. 학생 계정을 먼저 등록해 주세요."}
           </p>
         </Card>
       ) : (

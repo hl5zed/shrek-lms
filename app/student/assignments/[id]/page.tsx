@@ -44,14 +44,26 @@ export default async function StudentAssignmentDetailPage({
 
   const { data: submission } = await supabase
     .from("submissions")
-    .select("id, status, content_text")
+    .select("id, status, content_text, submitted_at, file_urls")
     .eq("assignment_id", assignment.id)
     .eq("student_id", user.id)
     .maybeSingle();
 
+  const hasTextSubmission = Boolean(submission?.content_text?.trim());
+  const hasFileSubmission = Array.isArray(submission?.file_urls) && submission.file_urls.length > 0;
+  const hasSubmissionRecordWithoutContent = Boolean(
+    submission && !hasTextSubmission && !hasFileSubmission
+  );
+  const submissionStatusLabel =
+    submission?.status === "reviewed"
+      ? "첨삭완료"
+      : submission?.status === "submitted"
+        ? "제출 완료"
+        : "미제출";
+
   const statusLabel =
     submission?.status === "reviewed"
-      ? "submitted"
+      ? "reviewed"
       : submission?.status === "submitted"
         ? "pending"
         : "pending";
@@ -67,17 +79,36 @@ export default async function StudentAssignmentDetailPage({
           <RowItem label="마감일" value={assignment.due_date} />
           <RowItem
             label="제출 상태"
-            value={
-              submission?.status === "reviewed"
-                ? "첨삭 완료"
-                : submission?.status === "submitted"
-                  ? "제출 완료"
-                  : "미제출"
-            }
+            value={submissionStatusLabel}
           />
           {assignment.description ? (
             <p className="mt-3 text-sm text-[#4A55A8]">{assignment.description}</p>
           ) : null}
+          {submission?.status ? (
+            <div className="mt-3 rounded-lg border border-[#D4D9F5] bg-[#F5F7FF] px-3 py-2.5 text-sm text-[#4A55A8]">
+              <p className="font-semibold text-[#161D55]">제출 이력</p>
+              <ul className="mt-1 space-y-0.5">
+                <li>상태: {submissionStatusLabel}</li>
+                <li>
+                  최근 제출/수정:{" "}
+                  {submission.submitted_at
+                    ? new Date(submission.submitted_at).toLocaleString("ko-KR")
+                    : "기록 없음"}
+                </li>
+                <li>텍스트 답안: {hasTextSubmission ? "있음" : "없음"}</li>
+                <li>이미지/파일 제출: {hasFileSubmission ? "있음" : "없음"}</li>
+              </ul>
+              {hasSubmissionRecordWithoutContent ? (
+                <p className="mt-2 rounded-md bg-[#FFF6E8] px-2.5 py-2 text-xs text-[#A86A00]">
+                  일부 정보를 불러오지 못했습니다. 필요한 경우 담당 선생님 또는 관리자에게 문의해 주세요.
+                </p>
+              ) : null}
+            </div>
+          ) : (
+            <div className="mt-3 rounded-lg border border-dashed border-[#D4D9F5] bg-[#F5F7FF] px-3 py-2.5 text-sm text-[#4A55A8]">
+              아직 제출 내역이 없습니다. 아래에서 답안을 작성해 제출할 수 있습니다.
+            </div>
+          )}
         </div>
       </StudentCard>
 
@@ -100,7 +131,7 @@ export default async function StudentAssignmentDetailPage({
         ) : null}
         {status === "forbidden" ? (
           <p className="mt-3 rounded-lg bg-[#FFECEC] px-3 py-2 text-sm text-[#C03232]">
-            접근 권한이 없는 과제입니다.
+            이 화면에 접근할 권한이 없습니다. 필요한 경우 관리자에게 문의해 주세요.
           </p>
         ) : null}
         {status === "file_required" ? (

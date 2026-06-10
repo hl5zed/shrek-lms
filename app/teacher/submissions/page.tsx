@@ -43,7 +43,10 @@ export default async function TeacherSubmissionsPage() {
         </div>
         {pending.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-zinc-200 bg-white p-8 text-center">
-            <p className="text-sm text-zinc-400">대기 중인 제출물이 없습니다.</p>
+            <p className="text-sm text-zinc-500">아직 확인할 제출물이 없습니다.</p>
+            <p className="mt-1 text-xs text-zinc-400">
+              학생이 과제를 제출하면 이곳에서 확인할 수 있습니다.
+            </p>
           </div>
         ) : (
           <ul className="space-y-2">

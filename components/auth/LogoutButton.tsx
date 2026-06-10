@@ -19,9 +19,19 @@ export default function LogoutButton({
   async function handleLogout() {
     if (isLoading) return;
     setIsLoading(true);
-    await supabase.auth.signOut();
-    router.replace("/login");
-    router.refresh();
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("로그아웃 실패:", error);
+        setIsLoading(false);
+        return;
+      }
+      router.replace("/login");
+      router.refresh();
+    } catch (error) {
+      console.error("로그아웃 중 예외 발생:", error);
+      setIsLoading(false);
+    }
   }
 
   const baseClass =

@@ -47,7 +47,10 @@ export default async function ParentFeedbackPage() {
 
       {children.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-zinc-200 bg-white p-16 text-center">
-          <p className="text-sm text-zinc-400">연결된 자녀가 없습니다.</p>
+          <p className="text-sm text-zinc-500">아직 확인할 첨삭 결과가 없습니다.</p>
+          <p className="mt-1 text-xs text-zinc-400">
+            자녀의 첨삭이 완료되면 이곳에서 확인할 수 있습니다.
+          </p>
         </div>
       ) : (
         childData.map(({ child, submissions }) => (
@@ -60,7 +63,7 @@ export default async function ParentFeedbackPage() {
             </div>
 
             {submissions.length === 0 ? (
-              <p className="text-sm text-zinc-400">완료된 첨삭이 없습니다.</p>
+              <p className="text-sm text-zinc-500">아직 확인할 첨삭 결과가 없습니다.</p>
             ) : (
               <ul className="space-y-2">
                 {submissions.map((sub) => (

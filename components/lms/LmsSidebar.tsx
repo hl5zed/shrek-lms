@@ -30,7 +30,7 @@ export default function LmsSidebar({ menus, activeMenu, onChangeMenu, className 
             S
           </div>
           <div>
-            <p className="text-[13px] font-bold text-[var(--color-neutral-1000)]">슈렉샘 LMS</p>
+            <p className="text-[13px] font-bold text-[var(--color-neutral-1000)]">슈렉샘 논술 LMS</p>
             <p className="text-[10px] text-[var(--color-neutral-400)]">논술 성장관리 플랫폼</p>
           </div>
         </div>

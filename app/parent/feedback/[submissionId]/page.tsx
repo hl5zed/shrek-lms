@@ -57,6 +57,19 @@ export default async function ParentFeedbackDetailPage({
     feedback.score_expression,
   ].some((score) => score !== null && score !== undefined);
   const hasFeedbackDetail = hasFeedbackComment || hasAnyScore;
+  const assignmentTitleRaw = (submission.assignments as unknown as { title?: string } | null)?.title;
+  const assignmentTitle =
+    typeof assignmentTitleRaw === "string" && assignmentTitleRaw.trim().length > 0
+      ? assignmentTitleRaw
+      : "과제 정보를 불러오지 못했습니다.";
+  const studentNameRaw = (submission.profiles as unknown as { name?: string } | null)?.name;
+  const studentName =
+    typeof studentNameRaw === "string" && studentNameRaw.trim().length > 0
+      ? studentNameRaw
+      : "학생 정보를 불러오지 못했습니다.";
+  const submittedAtText = submission.submitted_at
+    ? new Date(submission.submitted_at).toLocaleDateString("ko-KR")
+    : "제출일 정보가 확인되지 않습니다.";
 
   const scoreFields = [
     { key: "score_reading", label: "독해력" },
@@ -76,11 +89,11 @@ export default async function ParentFeedbackDetailPage({
       {/* 제목 */}
       <div className="mt-4 mb-8">
         <h1 className="text-2xl font-bold text-zinc-900">
-          {(submission.assignments as unknown as { title: string } | null)?.title ?? "과제"}
+          {assignmentTitle}
         </h1>
         <p className="mt-1 text-sm text-zinc-500">
-          {(submission.profiles as unknown as { name: string } | null)?.name} ·{" "}
-          {new Date(submission.submitted_at).toLocaleDateString("ko-KR")} 제출 ·{" "}
+          {studentName} ·{" "}
+          {submittedAtText} 제출 ·{" "}
           {submission.word_count}자
         </p>
       </div>
@@ -88,7 +101,7 @@ export default async function ParentFeedbackDetailPage({
       {!hasSubmissionContent || !hasFeedbackDetail ? (
         <div className="mb-5 rounded-2xl border border-[#F4D7A3] bg-[#FFF6E8] p-4">
           <p className="text-sm text-[#A86A00]">
-            첨삭 데이터 일부가 확인되지 않습니다. 답안/코멘트를 다시 확인하거나 선생님께 문의해 주세요.
+            일부 정보를 불러오지 못했습니다. 필요한 경우 담당 선생님 또는 관리자에게 문의해 주세요.
           </p>
         </div>
       ) : null}

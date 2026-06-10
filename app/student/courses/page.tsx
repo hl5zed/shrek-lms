@@ -36,7 +36,9 @@ export default async function StudentCoursesPage() {
             강의 목록을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.
           </p>
         ) : result.courses.length === 0 ? (
-          <p className="mt-3 text-sm text-[#6470BF]">아직 배정된 강의가 없습니다. 관리자에게 반 배정을 요청해 주세요.</p>
+          <p className="mt-3 text-sm text-[#6470BF]">
+            현재 연결된 강의가 없습니다. 담당 선생님 또는 관리자에게 문의해 주세요.
+          </p>
         ) : (
           <div className="mt-3 space-y-2">
             {result.courses.map((course) => (

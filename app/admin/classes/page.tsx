@@ -51,7 +51,7 @@ export default async function AdminClassesPage({
       {classes.length === 0 ? (
         <Card className="border-dashed p-10 text-center">
           <p className="text-sm text-zinc-400">
-            {q ? "검색 조건에 맞는 반이 없습니다." : "등록된 반이 없습니다."}
+            {q ? "검색 조건에 맞는 반이 없습니다." : "아직 등록된 반이 없습니다. 반을 생성한 뒤 학생과 교사를 연결해 주세요."}
           </p>
         </Card>
       ) : (

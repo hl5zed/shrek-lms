@@ -260,3 +260,4 @@ parent lectures 접근은 현재 제품 정책 확정 전이므로 이번 stagin
 - `docs/rls_replacement_plan.md`
 - `docs/lectures_ownership_audit.md`
 - `docs/manual_permission_test_guide.md`
+- `docs/staging_execution_checklist.md`

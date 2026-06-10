@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 
 // 학부모 자녀 과제 현황 — RLS에 의해 연결된 자녀 데이터만 조회됩니다.
@@ -62,7 +63,10 @@ export default async function ParentAssignmentsPage() {
 
       {children.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-zinc-200 bg-white p-16 text-center">
-          <p className="text-sm text-zinc-400">연결된 자녀가 없습니다.</p>
+          <p className="text-sm text-zinc-500">현재 확인할 자녀 과제 현황이 없습니다.</p>
+          <p className="mt-1 text-xs text-zinc-400">
+            자녀의 과제가 등록되면 이곳에 표시됩니다.
+          </p>
         </div>
       ) : (
         childData.map(({ child, assignments }) => (
@@ -75,7 +79,7 @@ export default async function ParentAssignmentsPage() {
             </div>
 
             {assignments.length === 0 ? (
-              <p className="text-sm text-zinc-400">등록된 과제가 없습니다.</p>
+              <p className="text-sm text-zinc-500">현재 확인할 자녀 과제 현황이 없습니다.</p>
             ) : (
               <ul className="space-y-2">
                 {assignments.map((asgn) => {
@@ -89,6 +93,14 @@ export default async function ParentAssignmentsPage() {
                       <div>
                         <p className="text-sm font-medium text-zinc-900">{asgn.title}</p>
                         <p className="mt-0.5 text-xs text-zinc-400">마감: {asgn.due_date}</p>
+                        <div className="mt-2">
+                          <Link
+                            href="/parent/feedback"
+                            className="text-xs font-medium text-blue-600 hover:text-blue-700"
+                          >
+                            첨삭 결과 보기 →
+                          </Link>
+                        </div>
                       </div>
                       <ChildStatusBadge submission={childSub} dueDate={asgn.due_date} />
                     </li>

@@ -39,7 +39,10 @@ export default async function TeacherAssignmentsPage() {
 
       {!assignments || assignments.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-zinc-200 bg-white p-16 text-center">
-          <p className="text-sm text-zinc-400">등록된 과제가 없습니다.</p>
+          <p className="text-sm text-zinc-500">아직 등록된 과제가 없습니다.</p>
+          <p className="mt-1 text-xs text-zinc-400">
+            새 과제를 등록해 학생들에게 과제를 안내해 주세요.
+          </p>
           <Link
             href="/teacher/assignments/new"
             className="mt-4 inline-block text-sm font-medium text-blue-600 hover:text-blue-700"
@@ -66,6 +69,14 @@ export default async function TeacherAssignmentsPage() {
                     마감:{" "}
                     <span className={isOverdue ? "text-red-400" : ""}>{asgn.due_date}</span>
                   </p>
+                  <div className="mt-2">
+                    <Link
+                      href="/teacher/submissions"
+                      className="text-xs font-medium text-blue-600 hover:text-blue-700"
+                    >
+                      제출물 확인/첨삭 →
+                    </Link>
+                  </div>
                 </div>
                 <div className="flex shrink-0 gap-2">
                   {pending > 0 && (

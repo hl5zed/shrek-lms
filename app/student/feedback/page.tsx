@@ -37,7 +37,7 @@ export default async function StudentFeedbackPage() {
           </p>
         ) : result.rows.length === 0 ? (
           <p className="mt-3 text-sm text-[#6470BF]">
-            아직 제출한 답안이 없습니다. 먼저 과제를 제출하면 첨삭 결과를 볼 수 있습니다.
+            아직 확인할 첨삭 결과가 없습니다. 선생님의 첨삭이 완료되면 이곳에서 확인할 수 있습니다.
           </p>
         ) : (
           <div className="mt-3 space-y-2">

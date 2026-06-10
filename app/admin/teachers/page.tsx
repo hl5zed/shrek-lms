@@ -24,7 +24,7 @@ export default async function AdminTeachersPage() {
 
       {!teachers || teachers.length === 0 ? (
         <Card className="border-dashed p-16 text-center">
-          <p className="text-sm text-zinc-400">등록된 강사가 없습니다.</p>
+          <p className="text-sm text-zinc-400">아직 등록된 강사가 없습니다. 강사 계정을 먼저 등록해 주세요.</p>
         </Card>
       ) : (
         <TableContainer>

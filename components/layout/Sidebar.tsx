@@ -68,7 +68,7 @@ export default function Sidebar({ role, name }: SidebarProps) {
           <span className="text-xs font-bold text-white">논</span>
         </div>
         <div>
-          <p className="text-sm font-bold text-zinc-900">논술마루</p>
+          <p className="text-sm font-bold text-zinc-900">슈렉샘 논술 LMS</p>
           <p className="text-[10px] text-zinc-400">LMS</p>
         </div>
       </div>
