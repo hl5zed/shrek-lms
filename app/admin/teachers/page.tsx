@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import Card from "@/components/ui/Card";
+import Button from "@/components/ui/Button";
 import { Table, TableContainer } from "@/components/ui/Table";
+import Link from "next/link";
 
 // 관리자 강사 목록
 export default async function AdminTeachersPage() {
@@ -15,11 +17,16 @@ export default async function AdminTeachersPage() {
   return (
     <div>
       {/* 페이지 헤더 */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-zinc-900">강사 목록</h1>
-        <p className="mt-1 text-sm text-zinc-500">
-          등록된 강사 <span className="font-semibold text-zinc-700">{teachers?.length ?? 0}</span>명
-        </p>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-zinc-900">강사 목록</h1>
+          <p className="mt-1 text-sm text-zinc-500">
+            등록된 강사 <span className="font-semibold text-zinc-700">{teachers?.length ?? 0}</span>명
+          </p>
+        </div>
+        <Button asChild variant="primary">
+          <Link href="/admin/teachers/new">강사 등록</Link>
+        </Button>
       </div>
 
       {!teachers || teachers.length === 0 ? (
