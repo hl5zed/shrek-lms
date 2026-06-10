@@ -27,16 +27,16 @@ production 반영 여부는 이 로그의 PASS 결과를 근거로 별도 판단
 
 | 항목 | 내용 |
 | ---------------- | ------------------------------------------------------------------------------------------- |
-| 실행 날짜 | YYYY-MM-DD |
-| 실행자 | |
+| 실행 날짜 | 2026-06-11 |
+| 실행자 | Cursor AI |
 | 환경 | staging |
-| Git commit | |
-| Supabase project | |
+| Git commit | 0df2330 |
+| Supabase project | xxhfffvdmlzbozgfefrx |
 | 테스트 범위 | lectures / feedback_comments |
 | 관련 문서 | `docs/staging_lectures_rls_sql_draft.md`, `docs/staging_feedback_comments_rls_sql_draft.md` |
 | production 반영 여부 | 아직 아님 |
-| 실행 시작 시각 | HH:MM (UTC+7) |
-| 실행 종료 시각 | HH:MM (UTC+7) |
+| 실행 시작 시각 | 2026-06-11 04:42 (UTC+7) |
+| 실행 종료 시각 | 2026-06-11 04:59 (UTC+7) |
 | rollback 발생 시각 | 해당 없음 / HH:MM (UTC+7) |
 
 ---
@@ -45,9 +45,9 @@ production 반영 여부는 이 로그의 PASS 결과를 근거로 별도 판단
 
 | 순서 | 단계 | 시작 시각 | 종료 시각 | 결과 | 메모 |
 |---|---|---|---|---|---|
-| 1 | 실행 전 환경 확인 |  |  | PASS / FAIL |  |
-| 2 | 정책 백업 |  |  | PASS / FAIL |  |
-| 3 | 기준선 QA |  |  | PASS / FAIL |  |
+| 1 | 실행 전 환경 확인 | 04:42 | 04:44 | PASS | 필수 env 키 존재 확인 완료 |
+| 2 | 정책 백업 | 04:44 | 04:44 | 해당 없음 | 본 작업 범위는 Playwright 기준선 QA 실행 |
+| 3 | 기준선 QA | 04:44 | 04:59 | FAIL | 최초 브라우저 실행 파일 누락 후 재설치, 재실행 시 STAGING_BASE_URL DNS 해석 실패(ERR_NAME_NOT_RESOLVED) |
 | 4 | lectures RLS 테스트 |  |  | PASS / FAIL |  |
 | 5 | lectures QA |  |  | PASS / FAIL |  |
 | 6 | feedback_comments RLS 테스트 |  |  | PASS / FAIL |  |
@@ -150,22 +150,50 @@ production 반영 여부는 이 로그의 PASS 결과를 근거로 별도 판단
 
 ## 8. 실패 이슈 기록
 
-```md
-### 실패 이슈
+### 실패 이슈 #1 (테스트 인프라)
 
-- 날짜:
-- 환경:
-- 관련 테이블:
-- 관련 정책:
-- 로그인 계정:
-- 접근 URL:
-- 기대 결과:
-- 실제 결과:
-- 노출된 데이터:
-- 심각도: High / Medium / Low
-- rollback 실행 여부:
-- 조치 메모:
-```
+- 날짜: 2026-06-11
+- 환경: staging baseline playwright
+- 관련 테이블: 해당 없음
+- 관련 정책: 해당 없음
+- 로그인 계정: admin/teacherA/studentA/parentA 전부 영향
+- 접근 URL: test launch 단계
+- 기대 결과: Playwright가 chromium headless shell 실행
+- 실제 결과: `Executable doesn't exist ... chrome-headless-shell.exe`
+- 노출된 데이터: 없음
+- 심각도: Low
+- rollback 실행 여부: 미실행
+- 조치 메모: `npx playwright install chromium chromium-headless-shell --force` 재설치로 해소
+
+### 실패 이슈 #2 (환경 설정)
+
+- 날짜: 2026-06-11
+- 환경: staging baseline playwright
+- 관련 테이블: 해당 없음
+- 관련 정책: 해당 없음
+- 로그인 계정: admin/teacherA/studentA/parentA 전부 영향
+- 접근 URL: `https://staging-app-url.example.com/*`
+- 기대 결과: staging 앱 접속 및 로그인/핵심 화면 로딩 검증
+- 실제 결과: `net::ERR_NAME_NOT_RESOLVED`
+- 노출된 데이터: 없음
+- 심각도: Medium
+- rollback 실행 여부: 미실행
+- 조치 메모: `.env.local`의 `STAGING_BASE_URL`이 예시 도메인으로 설정되어 실제 QA 불가. 실제 staging URL로 교체 후 재실행 필요
+
+### 분류 결과
+
+- 테스트 코드 문제: **있음(수정 완료)**  
+  - 상대 경로 `page.goto("/...")`에서 baseURL 미적용 상황 대응을 위해 절대 URL 해석(`resolveUrl`)으로 보강
+- 앱 버그: **없음(미확인)**  
+  - 네트워크 접속 자체 실패로 앱 동작 단계까지 도달하지 못함
+- 데이터/계정 문제: **부분 있음(환경 문제)**  
+  - 계정 env 키는 존재하나, staging URL이 유효하지 않아 테스트 진행 불가
+
+### console / network 오류 요약
+
+- console error: 앱 런타임 콘솔 오류 검증 불가(페이지 미진입)
+- 4xx/5xx: 관측되지 않음 (DNS 실패로 HTTP 요청 단계 미도달)
+- 네트워크 오류: `ERR_NAME_NOT_RESOLVED` 5/5 테스트 공통 발생
 
 심각도 기준:
 
@@ -179,11 +207,11 @@ production 반영 여부는 이 로그의 PASS 결과를 근거로 별도 판단
 
 | 항목 | 결과 | 메모 |
 | ---------------------- | ----------- | -- |
-| lectures QA | PASS / FAIL | |
-| feedback_comments QA | PASS / FAIL | |
+| lectures QA | BLOCKED | staging URL 미유효로 baseline 단계 미통과 |
+| feedback_comments QA | BLOCKED | staging URL 미유효로 baseline 단계 미통과 |
 | High 이슈 | 0개 / 있음 | |
-| rollback 필요 여부 | 필요 / 불필요 | |
-| production 반영 검토 가능 여부 | 가능 / 불가 | |
+| rollback 필요 여부 | 불필요 | 정책/SQL 미적용 |
+| production 반영 검토 가능 여부 | 불가 | baseline QA 자체가 환경 문제로 실패 |
 
 ---
 

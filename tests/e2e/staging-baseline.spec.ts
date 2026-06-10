@@ -57,6 +57,11 @@ function loadCredential(role: RoleKey): RoleCredential {
   };
 }
 
+function resolveUrl(path: string): string {
+  const baseUrl = requiredEnv("STAGING_BASE_URL");
+  return new URL(path, baseUrl).toString();
+}
+
 function installConsoleAndNetworkWatch(page: Page): ConsoleAndNetworkWatch {
   const consoleErrors: string[] = [];
   const httpErrors: string[] = [];
@@ -103,7 +108,7 @@ function installConsoleAndNetworkWatch(page: Page): ConsoleAndNetworkWatch {
 }
 
 async function login(page: Page, credential: RoleCredential): Promise<void> {
-  await page.goto("/login");
+  await page.goto(resolveUrl("/login"));
   await page.getByPlaceholder("example@email.com").fill(credential.email);
   await page.getByPlaceholder("••••••••").fill(credential.password);
   await page.getByRole("button", { name: "로그인" }).click();
@@ -187,11 +192,11 @@ test.describe("Round 1 staging baseline QA", () => {
     await login(page, credential);
     await assertLoginRedirectOrExplain(page, "admin", watch);
 
-    await page.goto("/admin/dashboard");
+    await page.goto(resolveUrl("/admin/dashboard"));
     await expect(page).toHaveURL(/\/admin\/dashboard/);
     await expect(page).not.toHaveURL(/\/login/);
 
-    await page.goto("/admin/students");
+    await page.goto(resolveUrl("/admin/students"));
     await expect(page).toHaveURL(/\/admin\/students/);
 
     expectNoClientErrors(watch, "admin");
@@ -206,15 +211,15 @@ test.describe("Round 1 staging baseline QA", () => {
     await login(page, credential);
     await assertLoginRedirectOrExplain(page, "teacher", watch);
 
-    await page.goto("/teacher/dashboard");
+    await page.goto(resolveUrl("/teacher/dashboard"));
     await expect(page).toHaveURL(/\/teacher\/dashboard/);
     await expect(page.getByRole("heading", { name: "강사 대시보드", exact: true })).toBeVisible();
 
-    await page.goto("/teacher/lectures");
+    await page.goto(resolveUrl("/teacher/lectures"));
     await expect(page).toHaveURL(/\/teacher\/lectures/);
     await expect(page.getByRole("heading", { name: "강의", exact: true })).toBeVisible();
 
-    await page.goto("/teacher/submissions");
+    await page.goto(resolveUrl("/teacher/submissions"));
     await expect(page).toHaveURL(/\/teacher\/submissions/);
     await expect(page.getByRole("heading", { name: "제출함", exact: true })).toBeVisible();
 
@@ -230,16 +235,16 @@ test.describe("Round 1 staging baseline QA", () => {
     await login(page, credential);
     await assertLoginRedirectOrExplain(page, "student", watch);
 
-    await page.goto("/student/dashboard");
+    await page.goto(resolveUrl("/student/dashboard"));
     await expect(page).toHaveURL(/\/student\/dashboard/);
     await expect(page.getByText(/안녕하세요,\s*.*님/)).toBeVisible();
     await expect(page.getByRole("heading", { name: "수강 중 강의", exact: true })).toBeVisible();
 
-    await page.goto("/student/lectures");
+    await page.goto(resolveUrl("/student/lectures"));
     await expect(page).toHaveURL(/\/student\/lectures/);
     await expect(page.getByRole("heading", { name: "강의", exact: true })).toBeVisible();
 
-    await page.goto("/student/feedback");
+    await page.goto(resolveUrl("/student/feedback"));
     await expect(page).toHaveURL(/\/student\/feedback/);
     await expect(page.getByRole("heading", { name: "첨삭 결과", exact: true })).toBeVisible();
 
@@ -255,11 +260,11 @@ test.describe("Round 1 staging baseline QA", () => {
     await login(page, credential);
     await assertLoginRedirectOrExplain(page, "parent", watch);
 
-    await page.goto("/parent/dashboard");
+    await page.goto(resolveUrl("/parent/dashboard"));
     await expect(page).toHaveURL(/\/parent\/dashboard/);
     await expect(page.getByRole("heading", { name: "학부모 대시보드", exact: true })).toBeVisible();
 
-    await page.goto("/parent/feedback");
+    await page.goto(resolveUrl("/parent/feedback"));
     await expect(page).toHaveURL(/\/parent\/feedback/);
     await expect(page.getByRole("heading", { name: "첨삭 결과", exact: true })).toBeVisible();
 
@@ -271,16 +276,16 @@ test.describe("Round 1 staging baseline QA", () => {
   test("logged-out 보호 페이지 접근 차단", async ({ page }) => {
     const watch = installConsoleAndNetworkWatch(page);
 
-    await page.goto("/teacher/dashboard");
+    await page.goto(resolveUrl("/teacher/dashboard"));
     await expect(page).toHaveURL(/\/login/);
 
-    await page.goto("/admin/dashboard");
+    await page.goto(resolveUrl("/admin/dashboard"));
     await expect(page).toHaveURL(/\/login/);
 
-    await page.goto("/student/dashboard");
+    await page.goto(resolveUrl("/student/dashboard"));
     await expect(page).toHaveURL(/\/login/);
 
-    await page.goto("/parent/dashboard");
+    await page.goto(resolveUrl("/parent/dashboard"));
     await expect(page).toHaveURL(/\/login/);
 
     expectNoClientErrors(watch, "logged-out");
