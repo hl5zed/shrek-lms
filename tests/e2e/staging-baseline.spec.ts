@@ -24,6 +24,22 @@ function requiredEnv(name: string): string {
   return value;
 }
 
+const REQUIRED_ENV_KEYS = [
+  "STAGING_BASE_URL",
+  "E2E_ADMIN_EMAIL",
+  "E2E_ADMIN_PASSWORD",
+  "E2E_TEACHERA_EMAIL",
+  "E2E_TEACHERA_PASSWORD",
+  "E2E_STUDENTA_EMAIL",
+  "E2E_STUDENTA_PASSWORD",
+  "E2E_PARENTA_EMAIL",
+  "E2E_PARENTA_PASSWORD",
+] as const;
+
+function getMissingRequiredEnvKeys(): string[] {
+  return REQUIRED_ENV_KEYS.filter((key) => !process.env[key]?.trim());
+}
+
 function loadEnvLocalIfExists(): void {
   const envPath = resolve(process.cwd(), ".env.local");
   if (!existsSync(envPath)) return;
@@ -171,18 +187,42 @@ function expectNoClientErrors(
   ).toEqual([]);
 }
 
+type ErrorSnapshot = {
+  consoleCount: number;
+  httpCount: number;
+};
+
+function takeErrorSnapshot(watch: ConsoleAndNetworkWatch): ErrorSnapshot {
+  return {
+    consoleCount: watch.getConsoleErrors().length,
+    httpCount: watch.getHttpErrors().length,
+  };
+}
+
+function expectNoNewClientErrors(
+  watch: ConsoleAndNetworkWatch,
+  contextLabel: string,
+  snapshot: ErrorSnapshot
+): void {
+  const newConsoleErrors = watch.getConsoleErrors().slice(snapshot.consoleCount);
+  const newHttpErrors = watch.getHttpErrors().slice(snapshot.httpCount);
+  expect.soft(
+    newConsoleErrors,
+    `[${contextLabel}] console error 발생`
+  ).toEqual([]);
+  expect.soft(
+    newHttpErrors,
+    `[${contextLabel}] 400/401/403/500 응답 감지`
+  ).toEqual([]);
+}
+
 test.describe("Round 1 staging baseline QA", () => {
   test.beforeAll(() => {
     loadEnvLocalIfExists();
-    requiredEnv("STAGING_BASE_URL");
-    requiredEnv("E2E_ADMIN_EMAIL");
-    requiredEnv("E2E_ADMIN_PASSWORD");
-    requiredEnv("E2E_TEACHERA_EMAIL");
-    requiredEnv("E2E_TEACHERA_PASSWORD");
-    requiredEnv("E2E_STUDENTA_EMAIL");
-    requiredEnv("E2E_STUDENTA_PASSWORD");
-    requiredEnv("E2E_PARENTA_EMAIL");
-    requiredEnv("E2E_PARENTA_PASSWORD");
+    const missingEnv = getMissingRequiredEnvKeys();
+    if (missingEnv.length > 0) {
+      throw new Error(`필수 환경변수 누락: ${missingEnv.join(", ")}`);
+    }
   });
 
   test("admin 로그인 및 /admin/* 접근", async ({ page }) => {
@@ -195,11 +235,46 @@ test.describe("Round 1 staging baseline QA", () => {
     await page.goto(resolveUrl("/admin/dashboard"));
     await expect(page).toHaveURL(/\/admin\/dashboard/);
     await expect(page).not.toHaveURL(/\/login/);
+    expectNoNewClientErrors(watch, "admin:/admin/dashboard", takeErrorSnapshot(watch));
 
+    const studentsSnapshot = takeErrorSnapshot(watch);
     await page.goto(resolveUrl("/admin/students"));
     await expect(page).toHaveURL(/\/admin\/students/);
+    expectNoNewClientErrors(watch, "admin:/admin/students", studentsSnapshot);
 
-    expectNoClientErrors(watch, "admin");
+    const feedbackSnapshot = takeErrorSnapshot(watch);
+    await page.goto(resolveUrl("/admin/feedback"));
+    await expect(page).toHaveURL(/\/admin\/feedback/);
+    await expect(page.getByRole("heading", { name: "첨삭 관리", exact: true })).toBeVisible();
+    const feedbackRows = page.locator("tbody tr");
+    const emptyFeedbackState = page.getByText("조건에 맞는 제출물이 없습니다.");
+    if (!(await emptyFeedbackState.count())) {
+      await expect.soft(
+        feedbackRows.first(),
+        "[admin:/admin/feedback] 목록 row 확인 실패"
+      ).toBeVisible();
+    }
+    expectNoNewClientErrors(watch, "admin:/admin/feedback", feedbackSnapshot);
+
+    const lecturesSnapshot = takeErrorSnapshot(watch);
+    await page.goto(resolveUrl("/admin/lectures"));
+    await expect(page).toHaveURL(/\/admin\/lectures/);
+    await expect(page.getByRole("heading", { name: "강의 관리", exact: true })).toBeVisible();
+    expectNoNewClientErrors(watch, "admin:/admin/lectures", lecturesSnapshot);
+
+    const assignmentsSnapshot = takeErrorSnapshot(watch);
+    await page.goto(resolveUrl("/admin/assignments"));
+    await expect(page).toHaveURL(/\/admin\/assignments/);
+    await expect(page.getByRole("heading", { name: "과제 관리", exact: true })).toBeVisible();
+    expectNoNewClientErrors(watch, "admin:/admin/assignments", assignmentsSnapshot);
+
+    const recordsSnapshot = takeErrorSnapshot(watch);
+    await page.goto(resolveUrl("/admin/records"));
+    await expect(page).toHaveURL(/\/admin\/records/);
+    await expect(page.getByRole("heading", { name: "수업기록", exact: true })).toBeVisible();
+    expectNoNewClientErrors(watch, "admin:/admin/records", recordsSnapshot);
+
+    expectNoClientErrors(watch, "admin:all");
     await logout(page);
     watch.detach();
   });

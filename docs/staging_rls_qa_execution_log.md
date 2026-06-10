@@ -247,3 +247,65 @@ production 반영 여부는 이 로그의 PASS 결과를 근거로 별도 판단
 - `docs/staging_feedback_comments_rls_sql_draft.md`
 - `docs/manual_permission_test_guide.md`
 - `docs/rls_replacement_plan.md`
+
+---
+
+## 12. 기준선 QA 재실행 (신규 admin 페이지 포함)
+
+| 항목 | 내용 |
+| --- | --- |
+| 실행 날짜 | 2026-06-11 |
+| 실행 시각 | 2026-06-11 06:14 (UTC+7) |
+| 실행 명령 | `npm run test:e2e:staging-baseline` |
+| 대상 스펙 | `tests/e2e/staging-baseline.spec.ts` |
+| 신규 포함 화면 | `/admin/feedback`, `/admin/lectures`, `/admin/assignments`, `/admin/records` |
+
+### 스펙 검증 범위(이번 실행 기준)
+
+- admin: `/admin/dashboard`, `/admin/students`, `/admin/feedback`, `/admin/lectures`, `/admin/assignments`, `/admin/records`
+- teacherA: `/teacher/dashboard`, `/teacher/lectures`, `/teacher/submissions`
+- studentA: `/student/dashboard`, `/student/lectures`, `/student/feedback`
+- parentA: `/parent/dashboard`, `/parent/feedback`
+- logged-out: 보호 페이지 접근 차단(`/teacher/dashboard`, `/admin/dashboard`, `/student/dashboard`, `/parent/dashboard`)
+- 공통: console error, `400/401/403/500` 응답 감지 로직 포함
+
+### 환경변수 확인 결과
+
+- `.env.local` 기준 필수 키 존재:
+  - `STAGING_BASE_URL`
+  - `E2E_ADMIN_EMAIL`, `E2E_ADMIN_PASSWORD`
+  - `E2E_TEACHERA_EMAIL`, `E2E_TEACHERA_PASSWORD`
+  - `E2E_STUDENTA_EMAIL`, `E2E_STUDENTA_PASSWORD`
+  - `E2E_PARENTA_EMAIL`, `E2E_PARENTA_PASSWORD`
+- 시스템 환경변수 레벨에는 미주입 상태이나, 스펙의 `.env.local` 로더로 실행 가능
+
+### 실행 결과 요약
+
+- 총 5개 테스트 실행
+- PASS: 0
+- FAIL: 5
+
+### PASS 항목
+
+- 없음
+
+### FAIL 항목 상세
+
+| 테스트 | 결과 | 분류 | 원인 |
+| --- | --- | --- | --- |
+| admin 로그인 및 `/admin/*` 접근 | FAIL | 데이터·계정/환경 문제 | `STAGING_BASE_URL=https://staging-app-url.example.com` DNS 해석 실패 (`ERR_NAME_NOT_RESOLVED`) |
+| teacher A 로그인 및 핵심 화면 접근 | FAIL | 데이터·계정/환경 문제 | 동일 |
+| student A 로그인 및 핵심 화면 접근 | FAIL | 데이터·계정/환경 문제 | 동일 |
+| parent A 로그인 및 핵심 화면 접근 | FAIL | 데이터·계정/환경 문제 | 동일 |
+| logged-out 보호 페이지 접근 차단 | FAIL | 데이터·계정/환경 문제 | 동일 |
+
+### 분류 결론
+
+- 테스트 코드 문제: 없음 (신규 admin 페이지 포함 스펙 확장 정상 반영)
+- 앱 버그: 판단 불가 (앱 진입 전 DNS 단계에서 실패)
+- 데이터·계정 문제: 있음 (유효하지 않은 staging URL 설정)
+
+### 후속 조치
+
+1. `.env.local`의 `STAGING_BASE_URL`을 실제 접속 가능한 staging URL로 교체
+2. 동일 스펙 재실행 후 PASS/FAIL 재기록
