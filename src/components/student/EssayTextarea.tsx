@@ -19,6 +19,7 @@ export default function EssayTextarea({
 }: EssayTextareaProps) {
   const [value, setValue] = useState(initialValue);
   const count = value.length;
+  const countWithoutSpaces = value.replace(/\s/g, "").length;
   const helper = useMemo(() => {
     if (count < minLength) return `최소 ${minLength}자 이상 작성해 주세요.`;
     if (count > maxLength) return `최대 ${maxLength}자를 초과했습니다.`;
@@ -38,7 +39,7 @@ export default function EssayTextarea({
       />
       <div className="flex items-center justify-between text-xs">
         <span className="text-[#6470BF]">{helper}</span>
-        <span className="text-[#4A55A8]">{count}자</span>
+        <span className="text-[#4A55A8]">공백 포함 {count}자 · 공백 제외 {countWithoutSpaces}자</span>
       </div>
     </div>
   );
