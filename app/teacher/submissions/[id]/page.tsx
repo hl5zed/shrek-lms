@@ -5,10 +5,13 @@ import { createClient } from "@/lib/supabase/server";
 // 제출물 상세 + 첨삭 작성 — Server Action으로 feedbacks INSERT 및 submission 상태 갱신
 export default async function SubmissionDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ status?: string }>;
 }) {
   const { id } = await params;
+  const { status } = await searchParams;
   const supabase = await createClient();
 
   const {
@@ -130,7 +133,7 @@ export default async function SubmissionDetailPage({
     if (areaCommentExpression) areaComments["표현"] = areaCommentExpression;
 
     // feedbacks upsert (submission_id unique 제약 활용)
-    await supabase.from("feedbacks").upsert({
+    const { error: feedbackError } = await supabase.from("feedbacks").upsert({
       submission_id: id,
       teacher_id: user.id,
       comment,
@@ -141,12 +144,20 @@ export default async function SubmissionDetailPage({
       score_expression: scoreExpression,
       area_comments: Object.keys(areaComments).length > 0 ? areaComments : null,
     }, { onConflict: "submission_id" });
+    if (feedbackError) {
+      console.error("Failed to save feedback:", feedbackError);
+      redirect(`/teacher/submissions/${id}?status=error`);
+    }
 
     // 제출물 상태를 reviewed로 업데이트
-    await supabase
+    const { error: submissionError } = await supabase
       .from("submissions")
       .update({ status: "reviewed" })
       .eq("id", id);
+    if (submissionError) {
+      console.error("Failed to update submission status:", submissionError);
+      redirect(`/teacher/submissions/${id}?status=error`);
+    }
 
     redirect("/teacher/submissions");
   }
@@ -190,6 +201,11 @@ export default async function SubmissionDetailPage({
           {submission.word_count}자 (공백 제외 {submission.word_count_pure}자) ·{" "}
           {submittedAtText}
         </p>
+        {status === "error" ? (
+          <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+            첨삭 저장에 실패했습니다. 다시 시도해 주세요.
+          </p>
+        ) : null}
       </div>
 
       {/* 학생 답안 */}
@@ -218,6 +234,20 @@ export default async function SubmissionDetailPage({
               <div key={field.name} className="flex items-center gap-4">
                 <label className="w-16 text-sm text-zinc-600">{field.label}</label>
                 <div className="flex gap-3">
+                  <label className="flex cursor-pointer flex-col items-center gap-1 text-xs text-zinc-500">
+                    <input
+                      type="radio"
+                      name={field.name}
+                      value=""
+                      defaultChecked={
+                        !feedback
+                          ? true
+                          : ((feedback as Record<string, number | null>)[field.name] ?? null) === null
+                      }
+                      className="accent-blue-600"
+                    />
+                    선택 안 함
+                  </label>
                   {[1, 2, 3, 4, 5].map((n) => (
                     <label
                       key={n}
@@ -229,10 +259,9 @@ export default async function SubmissionDetailPage({
                         value={n}
                         defaultChecked={
                           feedback
-                            ? (feedback as Record<string, number>)[field.name] === n
-                            : n === 3
+                            ? (feedback as Record<string, number | null>)[field.name] === n
+                            : false
                         }
-                        required
                         className="accent-blue-600"
                       />
                       {n}
@@ -326,6 +355,7 @@ export default async function SubmissionDetailPage({
             코멘트가 없습니다.
           </p>
         ) : null}
+        <p className="text-xs text-zinc-500">* 종합 코멘트는 필수입니다</p>
 
         <button
           type="submit"
