@@ -680,6 +680,34 @@ rollback 필요 여부: 불필요
 
 ---
 
+## 10-2. feedback_comments Round 1 실행 확정 기록
+
+실행 요약:
+
+- 1차 적용 실패:
+  - 초안 SQL이 `feedback_id` 컬럼을 가정하고 작성되어 실행 실패
+  - 실제 스키마 확인 결과 `feedback_comments`는 `submission_id` 기준 연결 구조
+- 재작성 후 재적용:
+  - `submission_id` 기준 SQL로 수정 후 적용 성공
+- 최종 정책 상태:
+  - 유지: `feedback_comments: admin 전체`
+  - 추가:
+    - `fc_select_student_staging`
+    - `fc_select_teacher_class_staging`
+    - `fc_select_parent_child_staging`
+    - `fc_insert_teacher_class_staging`
+  - 제거: `feedback_comments: 로그인 사용자 조회` (과허용 SELECT)
+- 적용 후 기준선 QA:
+  - Playwright 기준선 5개 시나리오(localhost) 전체 PASS
+
+발견 사항 (Round 2 이관):
+
+- `feedback_comments`에는 UPDATE/DELETE 정책이 없음.
+- 현재 앱에는 `feedback_comments` 수정/삭제 기능이 없으므로 Round 1에서는 영향 없음.
+- 향후 앱에서 코멘트 수정/삭제 기능이 추가되면 Round 2에서 UPDATE/DELETE 정책 설계를 포함해 보강한다.
+
+---
+
 ## 11. production 반영 전 메모
 
 이 Round 1 staging 실행 기록은 production 반영 근거의 일부일 뿐입니다.

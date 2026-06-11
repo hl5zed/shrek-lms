@@ -123,7 +123,7 @@ ORDER BY table_name, ordinal_position;
 
 ---
 
-## 7. [A]/[B]/[C] SQL 초안 (submission_id 기준)
+## 7. [A]/[B]/[C] SQL (Round 1 실제 적용 기준)
 
 ### [A] 백업 SQL
 
@@ -143,20 +143,19 @@ WHERE schemaname = 'public'
 ORDER BY policyname;
 ```
 
-### [B] 적용 SQL (대체 정책 + 과허용 제거)
+### [B] 적용 SQL (실제 적용된 정책명 기준)
 
 ```sql
 BEGIN;
 
--- 재실행 안전장치: staging 정책 제거 후 재생성
-DROP POLICY IF EXISTS "feedback_comments_select_student_submission_staging" ON public.feedback_comments;
-DROP POLICY IF EXISTS "feedback_comments_select_teacher_class_staging" ON public.feedback_comments;
-DROP POLICY IF EXISTS "feedback_comments_select_parent_child_staging" ON public.feedback_comments;
-DROP POLICY IF EXISTS "feedback_comments_insert_teacher_class_staging" ON public.feedback_comments;
-DROP POLICY IF EXISTS "feedback_comments_update_teacher_class_staging" ON public.feedback_comments;
+-- 재실행 안전장치: Round 1 정책 제거 후 재생성
+DROP POLICY IF EXISTS "fc_select_student_staging" ON public.feedback_comments;
+DROP POLICY IF EXISTS "fc_select_teacher_class_staging" ON public.feedback_comments;
+DROP POLICY IF EXISTS "fc_select_parent_child_staging" ON public.feedback_comments;
+DROP POLICY IF EXISTS "fc_insert_teacher_class_staging" ON public.feedback_comments;
 
 -- student: 본인 제출물 코멘트 조회
-CREATE POLICY "feedback_comments_select_student_submission_staging"
+CREATE POLICY "fc_select_student_staging"
   ON public.feedback_comments
   FOR SELECT
   USING (
@@ -169,7 +168,7 @@ CREATE POLICY "feedback_comments_select_student_submission_staging"
   );
 
 -- teacher: 담당 반 제출물 코멘트 조회
-CREATE POLICY "feedback_comments_select_teacher_class_staging"
+CREATE POLICY "fc_select_teacher_class_staging"
   ON public.feedback_comments
   FOR SELECT
   USING (
@@ -184,7 +183,7 @@ CREATE POLICY "feedback_comments_select_teacher_class_staging"
   );
 
 -- parent: 자녀 제출물 코멘트 조회
-CREATE POLICY "feedback_comments_select_parent_child_staging"
+CREATE POLICY "fc_select_parent_child_staging"
   ON public.feedback_comments
   FOR SELECT
   USING (
@@ -198,36 +197,9 @@ CREATE POLICY "feedback_comments_select_parent_child_staging"
   );
 
 -- teacher: 담당 반 제출물에만 코멘트 작성 + teacher_id 본인 강제
-CREATE POLICY "feedback_comments_insert_teacher_class_staging"
+CREATE POLICY "fc_insert_teacher_class_staging"
   ON public.feedback_comments
   FOR INSERT
-  WITH CHECK (
-    teacher_id = auth.uid()
-    AND EXISTS (
-      SELECT 1
-      FROM public.submissions s
-      JOIN public.assignments a ON a.id = s.assignment_id
-      JOIN public.classes c ON c.id = a.class_id
-      WHERE s.id = feedback_comments.submission_id
-        AND c.teacher_id = auth.uid()
-    )
-  );
-
--- teacher: 본인 작성 + 담당 반 범위에서만 수정
-CREATE POLICY "feedback_comments_update_teacher_class_staging"
-  ON public.feedback_comments
-  FOR UPDATE
-  USING (
-    teacher_id = auth.uid()
-    AND EXISTS (
-      SELECT 1
-      FROM public.submissions s
-      JOIN public.assignments a ON a.id = s.assignment_id
-      JOIN public.classes c ON c.id = a.class_id
-      WHERE s.id = feedback_comments.submission_id
-        AND c.teacher_id = auth.uid()
-    )
-  )
   WITH CHECK (
     teacher_id = auth.uid()
     AND EXISTS (
@@ -257,16 +229,15 @@ WHERE schemaname = 'public'
 ORDER BY policyname;
 ```
 
-### [C] 롤백 SQL (과허용 SELECT 복구)
+### [C] 롤백 SQL (Round 1 적용분 원복)
 
 ```sql
 BEGIN;
 
-DROP POLICY IF EXISTS "feedback_comments_select_student_submission_staging" ON public.feedback_comments;
-DROP POLICY IF EXISTS "feedback_comments_select_teacher_class_staging" ON public.feedback_comments;
-DROP POLICY IF EXISTS "feedback_comments_select_parent_child_staging" ON public.feedback_comments;
-DROP POLICY IF EXISTS "feedback_comments_insert_teacher_class_staging" ON public.feedback_comments;
-DROP POLICY IF EXISTS "feedback_comments_update_teacher_class_staging" ON public.feedback_comments;
+DROP POLICY IF EXISTS "fc_select_student_staging" ON public.feedback_comments;
+DROP POLICY IF EXISTS "fc_select_teacher_class_staging" ON public.feedback_comments;
+DROP POLICY IF EXISTS "fc_select_parent_child_staging" ON public.feedback_comments;
+DROP POLICY IF EXISTS "fc_insert_teacher_class_staging" ON public.feedback_comments;
 
 CREATE POLICY "feedback_comments: 로그인 사용자 조회"
   ON public.feedback_comments
@@ -286,6 +257,11 @@ WHERE schemaname = 'public'
   AND tablename = 'feedback_comments'
 ORDER BY policyname;
 ```
+
+참고:
+
+- Round 1 실제 적용 정책에는 UPDATE/DELETE 정책이 포함되지 않습니다.
+- 향후 앱에서 코멘트 수정/삭제 기능이 필요해지면 Round 2에서 정책을 추가 설계합니다.
 
 ---
 
