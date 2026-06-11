@@ -100,11 +100,21 @@ export default async function SubmissionDetailPage({
     if (!user) redirect("/login");
 
     const comment = formData.get("comment") as string;
-    const scoreReading = Number(formData.get("score_reading"));
-    const scoreThinking = Number(formData.get("score_thinking"));
-    const scoreLogic = Number(formData.get("score_logic"));
-    const scoreStructure = Number(formData.get("score_structure"));
-    const scoreExpression = Number(formData.get("score_expression"));
+    // 점수 컬럼은 NULL 허용 + CHECK(1~5) 제약이므로, 빈값/범위외 값은 null로 정규화합니다.
+    const normalizeScore = (value: FormDataEntryValue | null): number | null => {
+      if (typeof value !== "string") return null;
+      const trimmed = value.trim();
+      if (!trimmed) return null;
+      const parsed = Number(trimmed);
+      if (!Number.isFinite(parsed)) return null;
+      if (parsed < 1 || parsed > 5) return null;
+      return parsed;
+    };
+    const scoreReading = normalizeScore(formData.get("score_reading"));
+    const scoreThinking = normalizeScore(formData.get("score_thinking"));
+    const scoreLogic = normalizeScore(formData.get("score_logic"));
+    const scoreStructure = normalizeScore(formData.get("score_structure"));
+    const scoreExpression = normalizeScore(formData.get("score_expression"));
     const areaCommentReading = String(formData.get("area_comment_reading") ?? "").trim();
     const areaCommentThinking = String(formData.get("area_comment_thinking") ?? "").trim();
     const areaCommentLogic = String(formData.get("area_comment_logic") ?? "").trim();
