@@ -708,6 +708,37 @@ rollback 필요 여부: 불필요
 
 ---
 
+## 10-3. 첨삭 저장 성능 이슈(57014) 원인/조치 기록
+
+증상:
+
+- 강사 첨삭 저장(`saveFeedback`) 시 statement timeout (`57014`) 발생
+- 저장 요청 1건당 약 45~80초 지연
+
+원인 분석:
+
+- `feedbacks -> submissions -> assignments -> classes -> class_students -> parent_students`로 이어지는
+  RLS 정책 교차 참조가 누적됨
+- 신·구 정책이 중복 공존하면서 planner가 다수 서브플랜을 생성
+- `EXPLAIN ANALYZE` 기준 `SubPlan` 약 4,800개, `Planning Time` 약 26초 확인
+
+조치:
+
+- SECURITY DEFINER 헬퍼 함수 4종 추가
+  - `is_teacher_of_submission`
+  - `is_own_submission`
+  - `is_parent_of_submission`
+  - `is_teacher_of_assignment`
+- `feedbacks`, `submissions`의 교차 테이블 참조 정책을 함수 기반 v2 정책으로 교체
+- 추가로 `get_my_role()`을 SECURITY DEFINER로 변경하여 `profiles` 재귀 참조 위험 차단
+
+결과:
+
+- 첨삭 저장 성능: 약 843ms로 개선
+- 첨삭 저장/조회 기능 정상 동작 확인
+
+---
+
 ## 11. production 반영 전 메모
 
 이 Round 1 staging 실행 기록은 production 반영 근거의 일부일 뿐입니다.

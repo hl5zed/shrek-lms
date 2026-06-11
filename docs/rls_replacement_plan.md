@@ -321,3 +321,36 @@ lectures 코드 레벨 소유권 감사 결과는 `docs/lectures_ownership_audit
 - [x] 검증 시나리오 포함
 - [x] 실제 SQL 미작성
 - [x] 앱 코드 미수정
+
+---
+
+## 14. Round 2 RLS 정리 계획 (성능/정합성 통합)
+
+Round 1에서 feedback 저장 timeout(57014) 이슈를 해결했지만, 페이지 로딩 1~3초 구간의 추가 개선 여지가 확인되었습니다.
+Round 2에서는 아래 테이블을 동일 원칙으로 정리합니다.
+
+대상 테이블:
+
+- `assignments`
+- `classes`
+- `class_students`
+- `parent_students`
+- `lectures`
+- `feedback_comments`
+
+정리 원칙:
+
+1. 신·구 중복 정책 제거
+2. 교차 테이블 체인 검증은 SECURITY DEFINER 헬퍼 함수 기반으로 통일
+3. 역할 경계(admin/teacher/student/parent)를 기능 요구 기준으로 재검증
+4. 성능 지표(Planning Time, SubPlan 개수, 요청 p95)를 함께 기록
+
+특기 교체 항목:
+
+- 과허용 정책 `lectures: admin/teacher INSERT`를 class ownership 검증 포함 정책으로 교체
+
+목표:
+
+- 권한 정합성 유지
+- 정책 중복 제거
+- 페이지 로딩/저장 성능 추가 안정화 (체감 1~3초 개선 여지 반영)
