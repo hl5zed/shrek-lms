@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import Link from "next/link";
 import { adminSupabase, assertAdminSupabaseEnv } from "@/lib/supabase/admin";
+import { requireAdmin } from "@/lib/auth/require-admin";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
@@ -40,6 +41,7 @@ export default async function AdminBoardDetailPage({
   // 삭제 Server Action
   async function deletePost() {
     "use server";
+    await requireAdmin();
     assertAdminSupabaseEnv();
     await adminSupabase.from("posts").delete().eq("id", id);
     revalidatePath("/admin/board");

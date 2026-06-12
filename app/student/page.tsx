@@ -5,24 +5,7 @@ import StudentShell from "@/src/components/student/StudentShell";
 import StudentCard from "@/src/components/student/StudentCard";
 import StatCard from "@/src/components/student/StatCard";
 import { adminSupabase, assertAdminSupabaseEnv } from "@/lib/supabase/admin";
-
-function getEmbedUrl(videoUrl: string): string | null {
-  try {
-    const url = new URL(videoUrl);
-    if (url.hostname.includes("youtube.com") && url.searchParams.get("v")) {
-      return `https://www.youtube.com/embed/${url.searchParams.get("v")}`;
-    }
-    if (url.hostname.includes("youtu.be")) {
-      return `https://www.youtube.com/embed${url.pathname}`;
-    }
-    if (url.hostname.includes("vimeo.com")) {
-      return `https://player.vimeo.com/video${url.pathname}`;
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
+import { getEmbedUrl } from "@/lib/lectures/video-url";
 
 export default async function StudentHomePage() {
   assertAdminSupabaseEnv();

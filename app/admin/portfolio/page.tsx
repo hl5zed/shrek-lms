@@ -1,6 +1,7 @@
 import { revalidatePath } from "next/cache";
 import Card from "@/components/ui/Card";
 import { adminSupabase, assertAdminSupabaseEnv } from "@/lib/supabase/admin";
+import { requireAdmin } from "@/lib/auth/require-admin";
 import PortfolioClient, { type PortfolioHistoryItem, type PortfolioStudentOption } from "./PortfolioClient";
 
 type FeedbackRow = {
@@ -43,6 +44,7 @@ function splitComment(value: string | null) {
 
 export async function setRepresentativeWork(submissionId: string, studentId: string) {
   "use server";
+  await requireAdmin();
 
   assertAdminSupabaseEnv();
 

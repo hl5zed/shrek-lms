@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import SignupForm from "./SignupForm";
 
@@ -19,8 +20,8 @@ export default async function SignupPage() {
       <div className="w-full max-w-sm">
         {/* 로고 */}
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600">
-            <span className="text-xl font-bold text-white">논</span>
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl overflow-hidden">
+            <Image src="/shrek-s.png" alt="로고" width={48} height={48} className="object-cover" />
           </div>
           <h1 className="text-2xl font-bold text-zinc-900">슈렉샘 논술 LMS</h1>
           <p className="mt-1.5 text-sm text-zinc-500">학생 회원가입 후 강의·과제·첨삭을 시작하세요</p>

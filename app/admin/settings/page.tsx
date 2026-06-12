@@ -5,6 +5,7 @@ import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import { createClient } from "@/lib/supabase/server";
 import { adminSupabase, assertAdminSupabaseEnv } from "@/lib/supabase/admin";
+import { requireAdmin } from "@/lib/auth/require-admin";
 
 export default async function AdminSettingsPage({
   searchParams,
@@ -52,6 +53,7 @@ export default async function AdminSettingsPage({
 
   async function updateProfile(formData: FormData) {
     "use server";
+    await requireAdmin();
     assertAdminSupabaseEnv();
     const name = (formData.get("name") as string)?.trim();
     const phone = (formData.get("phone") as string)?.trim();

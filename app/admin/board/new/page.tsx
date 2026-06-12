@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { adminSupabase, assertAdminSupabaseEnv } from "@/lib/supabase/admin";
+import { requireAdmin } from "@/lib/auth/require-admin";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import Link from "next/link";
@@ -9,6 +10,7 @@ export default async function AdminBoardNewPage() {
   // 글 작성 Server Action
   async function createPost(formData: FormData) {
     "use server";
+    await requireAdmin();
     assertAdminSupabaseEnv();
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();

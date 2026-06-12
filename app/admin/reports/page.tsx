@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { adminSupabase, assertAdminSupabaseEnv } from "@/lib/supabase/admin";
+import { requireAdmin } from "@/lib/auth/require-admin";
 import ReportsClient, { type ParentReportOption } from "./ReportsClient";
 
 // ───── 유틸 ─────
@@ -27,6 +28,7 @@ function commentSummary(text: string | null) {
 // ───── Server Action: 주간 알림 발송 ─────
 async function sendWeeklyAlert(formData: FormData) {
   "use server";
+  await requireAdmin();
   assertAdminSupabaseEnv();
   const parentId   = formData.get("parentId")   as string;
   const studentName = formData.get("studentName") as string;

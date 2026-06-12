@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import Link from "next/link";
 import { adminSupabase, assertAdminSupabaseEnv } from "@/lib/supabase/admin";
+import { requireAdmin } from "@/lib/auth/require-admin";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 
@@ -23,6 +24,7 @@ export default async function AdminBoardEditPage({
 
   async function updatePost(formData: FormData) {
     "use server";
+    await requireAdmin();
     assertAdminSupabaseEnv();
     const title      = (formData.get("title") as string)?.trim();
     const content    = (formData.get("content") as string)?.trim();

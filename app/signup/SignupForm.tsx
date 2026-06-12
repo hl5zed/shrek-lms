@@ -64,7 +64,8 @@ export default function SignupForm() {
     if (!userId) {
       setIsLoading(false);
       setIsError(true);
-      setMessage("가입 계정을 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+      // Supabase는 이미 가입된 이메일에 대해 보안상 error 대신 user: null을 반환합니다.
+      setMessage("이미 사용 중인 이메일이거나 가입을 확인할 수 없습니다. 해당 이메일로 로그인을 시도해 보세요.");
       return;
     }
 

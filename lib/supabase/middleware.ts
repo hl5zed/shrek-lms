@@ -39,8 +39,18 @@ export async function updateSession(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  // 환경변수가 없으면 인증 처리를 건너뛰고 그대로 통과시킵니다.
+  // 환경변수가 없을 때는 보호 경로만 로그인으로 막고(실패-닫힘), 그 외 경로는 기존처럼 통과시킵니다.
   if (!supabaseUrl || !supabaseAnonKey) {
+    console.error("Supabase 환경변수 누락");
+    const pathname = request.nextUrl.pathname;
+    const isProtectedPath = Object.keys(ROLE_PREFIX).some(
+      (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+    );
+    if (isProtectedPath) {
+      const url = request.nextUrl.clone();
+      url.pathname = LOGIN_PATH;
+      return NextResponse.redirect(url);
+    }
     return supabaseResponse;
   }
 

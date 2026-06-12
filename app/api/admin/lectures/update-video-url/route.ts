@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { isAllowedVideoUrl } from "@/lib/lectures/video-url";
 
 // 관리자용 영상 URL 수정 API — 스트리밍 설정 화면에서 사용합니다
 export async function PATCH(request: NextRequest) {
@@ -30,6 +31,11 @@ export async function PATCH(request: NextRequest) {
 
   if (!id || typeof id !== "string") {
     return NextResponse.json({ error: "id is required" }, { status: 400 });
+  }
+
+  const nextVideoUrl = typeof video_url === "string" ? video_url.trim() : "";
+  if (nextVideoUrl && !isAllowedVideoUrl(nextVideoUrl)) {
+    return NextResponse.json({ error: "허용되지 않은 영상 URL입니다." }, { status: 400 });
   }
 
   const { error } = await supabase

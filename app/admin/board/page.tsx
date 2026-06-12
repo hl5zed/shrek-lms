@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { adminSupabase, assertAdminSupabaseEnv } from "@/lib/supabase/admin";
+import { requireAdmin } from "@/lib/auth/require-admin";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
@@ -48,6 +49,7 @@ export default async function AdminBoardPage({
   // 글 삭제 Server Action
   async function deletePost(formData: FormData) {
     "use server";
+    await requireAdmin();
     assertAdminSupabaseEnv();
     const id = formData.get("id") as string;
     await adminSupabase.from("posts").delete().eq("id", id);

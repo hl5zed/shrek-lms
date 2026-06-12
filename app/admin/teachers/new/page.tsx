@@ -3,6 +3,7 @@ import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import Link from "next/link";
 import { adminSupabase, assertAdminSupabaseEnv } from "@/lib/supabase/admin";
+import { requireAdmin } from "@/lib/auth/require-admin";
 
 function makeTempPassword() {
   return Math.random().toString(36).slice(-8);
@@ -18,6 +19,7 @@ export default async function AdminTeacherNewPage({
 
   async function createTeacher(formData: FormData) {
     "use server";
+    await requireAdmin();
     try {
       assertAdminSupabaseEnv();
     } catch {
