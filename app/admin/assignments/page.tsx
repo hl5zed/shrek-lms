@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Card from "@/components/ui/Card";
-import { Table, TableContainer } from "@/components/ui/Table";
 import { createClient } from "@/lib/supabase/server";
 
 function resolveClassFilter(classId: string | undefined): string {
@@ -22,10 +21,11 @@ function getDueState(dueDate: string): "past" | "soon" | "upcoming" {
 export default async function AdminAssignmentsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ classId?: string }>;
+  searchParams: Promise<{ classId?: string; tab?: string; q?: string }>;
 }) {
-  const { classId } = await searchParams;
+  const { classId, tab } = await searchParams;
   const classFilter = resolveClassFilter(classId);
+  const tabValue = tab === "active" || tab === "closed" ? tab : "all";
   const supabase = await createClient();
 
   const { data: classes } = await supabase.from("classes").select("id, name").order("name");
@@ -42,6 +42,13 @@ export default async function AdminAssignmentsPage({
       classes ( name, teacher_id )
     `)
     .order("due_date", { ascending: true });
+
+  const today = new Date().toISOString().slice(0, 10);
+  if (tabValue === "active") {
+    assignmentQuery = assignmentQuery.gte("due_date", today);
+  } else if (tabValue === "closed") {
+    assignmentQuery = assignmentQuery.lt("due_date", today);
+  }
 
   if (classFilter) {
     assignmentQuery = assignmentQuery.eq("class_id", classFilter);
@@ -105,15 +112,97 @@ export default async function AdminAssignmentsPage({
     };
   });
 
+  const inProgressCount = rows.filter((row) => row.dueState !== "past").length;
+  const totalSubmitted = rows.reduce((sum, row) => sum + row.submittedCount, 0);
+  const totalStudents = rows.reduce((sum, row) => sum + row.studentCount, 0);
+  const totalSubmitRate = totalStudents > 0 ? Math.round((totalSubmitted / totalStudents) * 100) : 0;
+
+  const tabBaseParams = new URLSearchParams();
+  if (classFilter) tabBaseParams.set("classId", classFilter);
+
+  const allTabParams = new URLSearchParams(tabBaseParams);
+  const activeTabParams = new URLSearchParams(tabBaseParams);
+  activeTabParams.set("tab", "active");
+  const closedTabParams = new URLSearchParams(tabBaseParams);
+  closedTabParams.set("tab", "closed");
+
+  const allTabHref = `/admin/assignments${allTabParams.toString() ? `?${allTabParams.toString()}` : ""}`;
+  const activeTabHref = `/admin/assignments${activeTabParams.toString() ? `?${activeTabParams.toString()}` : ""}`;
+  const closedTabHref = `/admin/assignments${closedTabParams.toString() ? `?${closedTabParams.toString()}` : ""}`;
+
+  const clearClassParams = new URLSearchParams();
+  if (tabValue !== "all") clearClassParams.set("tab", tabValue);
+  const clearClassHref = `/admin/assignments${clearClassParams.toString() ? `?${clearClassParams.toString()}` : ""}`;
+
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-zinc-900">과제 관리</h1>
-        <p className="mt-1 text-sm text-zinc-500">전체 과제 {rows.length}건</p>
+      <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-zinc-900">과제 관리</h1>
+          <p className="mt-1 text-sm text-zinc-500">전체 {rows.length}건</p>
+        </div>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <input
+            name="q"
+            placeholder="과제, 반, 강사 검색"
+            className="h-10 w-full rounded-lg border border-zinc-200 px-3 text-sm outline-none focus:border-indigo-400 sm:w-64"
+          />
+          <Link
+            href="/teacher/assignments/new"
+            className="inline-flex h-10 items-center justify-center rounded-lg bg-indigo-600 px-4 text-sm font-semibold text-white transition hover:bg-indigo-700"
+          >
+            과제 생성
+          </Link>
+        </div>
       </div>
+
+      <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+        <Card className="border border-zinc-100 bg-white p-4">
+          <p className="text-xs text-zinc-500">전체 과제</p>
+          <p className="mt-1 text-2xl font-bold text-zinc-900">{rows.length}건</p>
+        </Card>
+        <Card className="border border-zinc-100 bg-white p-4">
+          <p className="text-xs text-zinc-500">진행 중</p>
+          <p className="mt-1 text-2xl font-bold text-zinc-900">{inProgressCount}건</p>
+        </Card>
+        <Card className="border border-zinc-100 bg-white p-4">
+          <p className="text-xs text-zinc-500">전체 제출률</p>
+          <p className="mt-1 text-2xl font-bold text-zinc-900">{totalSubmitRate}%</p>
+        </Card>
+      </div>
+
+      <Card className="mb-4 p-0">
+        <div className="flex items-center gap-5 border-b border-zinc-100 px-4 pt-3">
+          <Link
+            href={allTabHref}
+            className={`pb-2 text-sm font-medium ${
+              tabValue === "all" ? "border-b-2 border-indigo-600 text-indigo-700" : "text-zinc-500 hover:text-zinc-700"
+            }`}
+          >
+            전체
+          </Link>
+          <Link
+            href={activeTabHref}
+            className={`pb-2 text-sm font-medium ${
+              tabValue === "active" ? "border-b-2 border-indigo-600 text-indigo-700" : "text-zinc-500 hover:text-zinc-700"
+            }`}
+          >
+            진행중
+          </Link>
+          <Link
+            href={closedTabHref}
+            className={`pb-2 text-sm font-medium ${
+              tabValue === "closed" ? "border-b-2 border-indigo-600 text-indigo-700" : "text-zinc-500 hover:text-zinc-700"
+            }`}
+          >
+            마감됨
+          </Link>
+        </div>
+      </Card>
 
       <Card className="mb-4 p-4">
         <form className="flex flex-wrap items-end gap-2">
+          <input type="hidden" name="tab" value={tabValue} />
           <div>
             <label className="mb-1 block text-xs font-medium text-zinc-500">반 필터</label>
             <select
@@ -137,7 +226,7 @@ export default async function AdminAssignmentsPage({
           </button>
           {classFilter ? (
             <Link
-              href="/admin/assignments"
+              href={clearClassHref}
               className="inline-flex h-10 items-center rounded-lg border border-zinc-200 px-3 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50"
             >
               초기화
@@ -149,65 +238,69 @@ export default async function AdminAssignmentsPage({
       {rows.length === 0 ? (
         <Card className="border-dashed p-16 text-center">
           <p className="text-sm text-zinc-400">
-            {classFilter ? "선택한 반에 등록된 과제가 없습니다." : "아직 등록된 과제가 없습니다."}
+            {tabValue === "active"
+              ? "현재 진행 중인 과제가 없습니다."
+              : tabValue === "closed"
+                ? "마감된 과제가 없습니다."
+                : classFilter
+                  ? "선택한 반에 등록된 과제가 없습니다."
+                  : "아직 등록된 과제가 없습니다."}
           </p>
         </Card>
       ) : (
-        <TableContainer>
-          <Table>
-            <thead>
-              <tr className="border-b border-zinc-100 bg-zinc-50">
-                <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">과제 제목</th>
-                <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">대상 반</th>
-                <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">담당 강사</th>
-                <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">마감일</th>
-                <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">제출 현황</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-50">
-              {rows.map((row) => (
-                <tr key={row.id} className="transition hover:bg-zinc-50">
-                  <td className="px-5 py-3.5">
-                    <Link href={`/admin/assignments/${row.id}`} className="block font-medium text-zinc-900">
-                      {row.title}
-                    </Link>
-                  </td>
-                  <td className="px-5 py-3.5 text-zinc-600">
-                    <Link href={`/admin/assignments/${row.id}`} className="block">
-                      {row.className}
-                    </Link>
-                  </td>
-                  <td className="px-5 py-3.5 text-zinc-600">
-                    <Link href={`/admin/assignments/${row.id}`} className="block">
-                      {row.teacherName}
-                    </Link>
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <Link href={`/admin/assignments/${row.id}`} className="block">
-                      <div className="flex items-center gap-2">
-                        <span className="text-zinc-600">{row.dueDate}</span>
-                        {row.dueState === "past" ? (
-                          <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-medium text-rose-700">
-                            지난 과제
-                          </span>
-                        ) : row.dueState === "soon" ? (
-                          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
-                            마감 임박
-                          </span>
-                        ) : null}
-                      </div>
-                    </Link>
-                  </td>
-                  <td className="px-5 py-3.5 text-zinc-600">
-                    <Link href={`/admin/assignments/${row.id}`} className="block">
-                      {row.submittedCount}/{row.studentCount}
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        </TableContainer>
+        <div className="grid grid-cols-1 gap-3 md:gap-4">
+          {rows.map((row) => {
+            const dueDate = new Date(row.dueDate);
+            const todayOnly = new Date();
+            todayOnly.setHours(0, 0, 0, 0);
+            const dueOnly = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
+            const diffDays = Math.floor((dueOnly.getTime() - todayOnly.getTime()) / (1000 * 60 * 60 * 24));
+            const dLabel = diffDays >= 0 ? `D-${diffDays}` : `D+${Math.abs(diffDays)}`;
+            const progressPercent =
+              row.studentCount > 0 ? Math.min(100, Math.round((row.submittedCount / row.studentCount) * 100)) : 0;
+
+            return (
+              <Link
+                key={row.id}
+                href={`/admin/assignments/${row.id}`}
+                className="block overflow-hidden rounded-xl border border-zinc-200 bg-white transition hover:shadow-sm"
+              >
+                <div
+                  className={`px-4 py-2 text-xs font-medium text-white ${
+                    row.dueState === "past" ? "bg-zinc-400" : row.dueState === "soon" ? "bg-amber-500" : "bg-indigo-500"
+                  }`}
+                >
+                  {row.className} · {row.teacherName}
+                </div>
+                <div className="space-y-3 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <h2 className="text-base font-semibold text-zinc-900">{row.title}</h2>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                        row.dueState === "past"
+                          ? "bg-zinc-100 text-zinc-700"
+                          : row.dueState === "soon"
+                            ? "bg-amber-100 text-amber-700"
+                            : "bg-indigo-100 text-indigo-700"
+                      }`}
+                    >
+                      {row.dueState === "past" ? "마감됨" : `${dLabel}일`}
+                    </span>
+                  </div>
+                  <p className="text-sm text-zinc-600">마감일: {row.dueDate}</p>
+                  <div>
+                    <div className="h-2 w-full rounded-full bg-zinc-100">
+                      <div className="h-2 rounded-full bg-indigo-500" style={{ width: `${progressPercent}%` }} />
+                    </div>
+                    <p className="mt-1 text-sm text-zinc-600">
+                      {row.submittedCount}/{row.studentCount}명 제출 ({progressPercent}%)
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
       )}
     </div>
   );

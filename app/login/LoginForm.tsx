@@ -1,18 +1,28 @@
 "use client";
 
-import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
+import { FormEvent, useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 
 // 로그인 폼 클라이언트 컴포넌트 — 서버 컴포넌트인 page.tsx에서 렌더합니다.
 export default function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
+
+  useEffect(() => {
+    const status = searchParams.get("status");
+    if (status === "signup_success") {
+      setIsError(false);
+      setMessage("가입이 완료되었습니다. 이메일을 확인해주세요.");
+    }
+  }, [searchParams]);
 
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -81,6 +91,13 @@ export default function LoginForm() {
           {message}
         </div>
       )}
+
+      <p className="text-center text-sm text-zinc-500">
+        아직 계정이 없으신가요?{" "}
+        <Link href="/signup" className="font-medium text-blue-600 hover:text-blue-700">
+          회원가입
+        </Link>
+      </p>
     </form>
   );
 }

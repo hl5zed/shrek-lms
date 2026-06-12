@@ -4,9 +4,14 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 const MIN_TEXT_LENGTH = 50;
-const MAX_FILE_BYTES = 10 * 1024 * 1024;
-const ALLOWED_MIME_TYPES = new Set(["image/jpeg", "image/png", "application/pdf"]);
-const ALLOWED_EXTENSIONS = [".jpg", ".jpeg", ".png", ".pdf"];
+const MAX_FILE_BYTES = 100 * 1024 * 1024;
+const ALLOWED_MIME_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "application/pdf",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+]);
+const ALLOWED_EXTENSIONS = [".jpg", ".jpeg", ".png", ".pdf", ".docx"];
 // 파일 제출 로직은 이 파일에 통합되어 있습니다.
 // 별도 upload-action.ts는 사용하지 않습니다.
 
@@ -19,8 +24,9 @@ type UploadFileMeta = {
   uploaded_at: string;
 };
 
-function sanitizeFileName(name: string): string {
-  return name.replace(/[^\w.\-]/g, "_");
+function getExtension(name: string): string {
+  const match = name.match(/\.([a-zA-Z0-9]+)$/);
+  return match ? `.${match[1].toLowerCase()}` : "";
 }
 
 function isAllowedFile(file: File): boolean {
@@ -58,9 +64,9 @@ async function uploadSubmissionFile(
 ): Promise<{ ok: true; meta: UploadFileMeta } | { ok: false; reason: "bucket_missing" | "upload_error" }> {
   const supabase = await createClient();
   const timestamp = Date.now();
-  const safeName = sanitizeFileName(file.name);
-  const objectPath = `assignment-submissions/${assignmentId}/${studentId}/${timestamp}-${safeName}`;
-  const bucketCandidates = ["assignment-submissions", "submissions", "student-submissions"] as const;
+  const ext = getExtension(file.name);
+  const objectPath = `${studentId}/${assignmentId}/${timestamp}${ext}`;
+  const bucketCandidates = ["submissions"] as const;
 
   let sawBucketNotFound = false;
 

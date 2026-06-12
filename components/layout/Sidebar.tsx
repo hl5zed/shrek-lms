@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import LogoutButton from "./LogoutButton";
 
@@ -17,6 +18,7 @@ const NAV_ITEMS: Record<"teacher" | "student" | "parent", NavItem[]> = {
     { label: "강의", href: "/teacher/lectures" },
     { label: "과제", href: "/teacher/assignments" },
     { label: "제출함", href: "/teacher/submissions" },
+    { label: "계정 설정", href: "/teacher/settings" },
   ],
   student: [
     { label: "대시보드", href: "/student/dashboard" },
@@ -138,9 +140,13 @@ export default function Sidebar({
       <aside className="flex h-screen w-60 shrink-0 flex-col border-r border-zinc-200 bg-white">
         <div className="border-b border-zinc-200 px-[14px] pb-3 pt-3.5">
           <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-600 text-[13px] font-bold text-white">
-              S
-            </div>
+            <Image
+              src="/shrek-s.png"
+              alt="슈렉샘"
+              width={32}
+              height={32}
+              className="rounded-lg object-contain"
+            />
             <div>
               <p className="text-[13px] font-bold text-zinc-900">슈렉샘 LMS</p>
               <p className="text-[10px] text-zinc-400">논술 성장관리 플랫폼</p>
@@ -151,7 +157,7 @@ export default function Sidebar({
         <nav className="flex min-h-0 flex-1 flex-col overflow-y-auto px-2 py-2">
           {ADMIN_GROUPS.map((group) => (
             <div key={group} className="mb-0.5">
-              <p className="px-2 pb-1 pt-1.5 text-[11px] font-medium text-zinc-400">{group}</p>
+              <p className="px-1 pb-0.5 pt-3 text-[9.5px] font-medium text-zinc-400 first:pt-1.5">{group}</p>
               <div className="space-y-0.5">
                 {items
                   .filter((item) => item.group === group)
@@ -161,10 +167,10 @@ export default function Sidebar({
                       <Link
                         key={item.href}
                         href={item.href}
-                        className={`flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[12.5px] transition ${
+                        className={`flex items-center gap-1.5 rounded-lg px-4 py-[7px] text-[13.5px] transition ${
                           isActive
-                            ? "bg-indigo-50 font-bold text-indigo-600"
-                            : "text-zinc-600 hover:bg-zinc-50"
+                            ? "bg-indigo-50 font-semibold text-indigo-600"
+                            : "text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900"
                         }`}
                       >
                         <span className="truncate">{item.label}</span>
@@ -211,10 +217,10 @@ export default function Sidebar({
           <Link
             key={item.href}
             href={item.href}
-            className={`flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+            className={`flex items-center rounded-lg py-2 pr-3 pl-[11px] text-sm font-medium transition-colors border-l-2 ${
               isActivePath(currentPath, item.href)
-                ? "bg-zinc-100 text-zinc-900"
-                : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900"
+                ? "border-indigo-500 bg-indigo-50 text-indigo-700"
+                : "border-transparent text-zinc-500 hover:bg-zinc-50 hover:text-zinc-800"
             }`}
           >
             {item.label}

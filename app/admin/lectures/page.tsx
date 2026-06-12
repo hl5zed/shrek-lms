@@ -139,22 +139,18 @@ export default async function AdminLecturesPage({
           <p className="mt-1 text-sm text-zinc-500">영상 · PDF · 수업자료 및 스트리밍 권한 관리</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            disabled
-            title="준비 중입니다"
-            className="h-10 rounded-lg bg-indigo-600 px-4 text-sm font-semibold text-white opacity-60"
+          <Link
+            href="/admin/lectures/streaming"
+            className="inline-flex h-10 items-center rounded-lg bg-indigo-600 px-4 text-sm font-semibold text-white transition hover:bg-indigo-700"
           >
             스트리밍 설정
-          </button>
-          <button
-            type="button"
-            disabled
-            title="준비 중입니다"
-            className="h-10 rounded-lg bg-indigo-600 px-4 text-sm font-semibold text-white opacity-60"
+          </Link>
+          <Link
+            href="/admin/lectures/upload"
+            className="inline-flex h-10 items-center rounded-lg bg-indigo-600 px-4 text-sm font-semibold text-white transition hover:bg-indigo-700"
           >
             콘텐츠 업로드
-          </button>
+          </Link>
         </div>
       </div>
 

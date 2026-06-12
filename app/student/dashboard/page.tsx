@@ -1,31 +1,197 @@
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 import StudentShell from "@/src/components/student/StudentShell";
 import StatCard from "@/src/components/student/StatCard";
 import StudentCard from "@/src/components/student/StudentCard";
-import TodayBanner from "@/src/components/student/TodayBanner";
 import CourseItem from "@/src/components/student/CourseItem";
-import { studentData } from "@/src/lib/mock/studentData";
+import { adminSupabase, assertAdminSupabaseEnv } from "@/lib/supabase/admin";
 
-export default function StudentDashboardPage() {
+type ScoreFeedback = {
+  score_reading: number | null;
+  score_thinking: number | null;
+  score_logic: number | null;
+  score_structure: number | null;
+  score_expression: number | null;
+};
+
+function average(values: number[]) {
+  if (values.length === 0) return null;
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
+}
+
+export default async function StudentDashboardPage() {
+  assertAdminSupabaseEnv();
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const { data: profile } = await supabase.from("profiles").select("name").eq("id", user.id).maybeSingle();
+
+  const { data: classLinks } = await supabase
+    .from("class_students")
+    .select("class_id")
+    .eq("student_id", user.id);
+
+  // 기존 학생 대시보드 흐름을 유지하기 위해 상태/강의/첨삭 지표를 서버에서 실데이터로 집계합니다.
+  const classIds = Array.from(new Set((classLinks ?? []).map((row) => row.class_id).filter(Boolean)));
+
+  const { data: assignments } = classIds.length
+    ? await supabase.from("assignments").select("id, class_id").in("class_id", classIds)
+    : { data: [] as Array<{ id: string; class_id: string }> };
+  const assignmentIds = (assignments ?? []).map((row) => row.id);
+
+  const { data: submissions } = assignmentIds.length
+    ? await supabase
+        .from("submissions")
+        .select("id, assignment_id, status")
+        .eq("student_id", user.id)
+        .in("assignment_id", assignmentIds)
+    : { data: [] as Array<{ id: string; assignment_id: string; status: string | null }> };
+
+  const totalAssignments = assignmentIds.length;
+  const submittedCount = (submissions ?? []).filter((row) =>
+    row.status === "submitted" || row.status === "reviewed" || row.status === "completed"
+  ).length;
+  const submitRate = totalAssignments > 0 ? Math.round((submittedCount / totalAssignments) * 100) : 0;
+
+  const submissionIds = (submissions ?? []).map((row) => row.id);
+  const { data: feedbackSubmissionRows } = submissionIds.length
+    ? await supabase.from("feedbacks").select("submission_id").in("submission_id", submissionIds)
+    : { data: [] as Array<{ submission_id: string }> };
+  const reviewedCount = new Set((feedbackSubmissionRows ?? []).map((row) => row.submission_id)).size;
+
+  const { data: feedbacks } = submissionIds.length
+    ? await supabase
+        .from("feedbacks")
+        .select("score_reading, score_thinking, score_logic, score_structure, score_expression")
+        .in("submission_id", submissionIds)
+    : { data: [] as ScoreFeedback[] };
+
+  const allScores = (feedbacks ?? []).flatMap((feedback) =>
+    [
+      feedback.score_reading,
+      feedback.score_thinking,
+      feedback.score_logic,
+      feedback.score_structure,
+      feedback.score_expression,
+    ].filter((score): score is number => typeof score === "number")
+  );
+  const averageScore = average(allScores);
+
+  const { data: lectures } = classIds.length
+    ? await supabase
+        .from("lectures")
+        .select("id, title, description, created_at, class_id, classes!inner(name, teacher_id)")
+        .in("class_id", classIds)
+        .order("created_at", { ascending: false })
+        .limit(3)
+    : {
+        data: [] as Array<{
+          id: string;
+          title: string | null;
+          description: string | null;
+          created_at: string;
+          class_id: string;
+          classes: { name?: string; teacher_id?: string } | null;
+        }>,
+      };
+
+  const teacherIds = Array.from(
+    new Set(
+      (lectures ?? [])
+        .map((lecture) => (lecture.classes as { teacher_id?: string } | null)?.teacher_id)
+        .filter((id): id is string => Boolean(id))
+    )
+  );
+  const { data: teachers } = teacherIds.length
+    ? await supabase.from("profiles").select("id, name").in("id", teacherIds)
+    : { data: [] as Array<{ id: string; name: string | null }> };
+  const teacherMap = new Map((teachers ?? []).map((teacher) => [teacher.id, teacher.name ?? "담당 강사"]));
+
+  const lectureItems = (lectures ?? []).map((lecture) => {
+    const classInfo = lecture.classes as { name?: string; teacher_id?: string } | null;
+    const teacherName = classInfo?.teacher_id ? teacherMap.get(classInfo.teacher_id) ?? "담당 강사" : "담당 강사";
+    return {
+      id: lecture.id,
+      title: lecture.title?.trim() ? lecture.title : "제목 없음",
+      teacherName,
+      schedule: classInfo?.name?.trim() ? classInfo.name : "반 정보 없음",
+      progress: 0,
+      status: "in_progress",
+      description: lecture.description?.trim() ? lecture.description : undefined,
+    };
+  });
+
+  // 공지사항: 전체 또는 학생 대상 공개 게시글
+  const { data: noticePosts } = await adminSupabase
+    .from("posts")
+    .select("id, title, category, content, created_at")
+    .eq("visibility", "공개")
+    .or("target_role.eq.all,target_role.eq.student")
+    .order("created_at", { ascending: false })
+    .limit(5);
+
+  const CATEGORY_COLOR: Record<string, string> = {
+    공지: "bg-indigo-100 text-indigo-700",
+    학습자료: "bg-emerald-100 text-emerald-700",
+    과제안내: "bg-amber-100 text-amber-700",
+    기타: "bg-zinc-100 text-zinc-500",
+  };
+
   return (
     <StudentShell title="학생 홈" showGreeting>
-      <TodayBanner
-        message={studentData.today.message}
-        attendance={studentData.today.attendance}
-      />
+      <div className="rounded-2xl bg-[#EEF1FF] p-4">
+        <p className="text-sm text-[#161D55]">안녕하세요, {profile?.name ?? "학생"}님!</p>
+      </div>
+
+      <StudentCard>
+        <h2 className="text-sm font-semibold text-[#06091F]">공지사항</h2>
+        {!noticePosts || noticePosts.length === 0 ? (
+          <p className="mt-3 text-sm text-[#6470BF]">등록된 공지사항이 없습니다.</p>
+        ) : (
+          <ul className="mt-3 space-y-3">
+            {noticePosts.map((post) => (
+              <li key={post.id} className="border-b border-[#D4D9F5] pb-3 last:border-0 last:pb-0">
+                <div className="flex items-center gap-2">
+                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${CATEGORY_COLOR[post.category] ?? "bg-zinc-100 text-zinc-500"}`}>
+                    {post.category}
+                  </span>
+                  <span className="text-[10px] text-zinc-400">
+                    {new Date(post.created_at).toLocaleDateString("ko-KR")}
+                  </span>
+                </div>
+                <p className="mt-1 text-sm font-medium text-[#06091F]">{post.title}</p>
+                {post.content && (
+                  <p className="mt-0.5 text-xs text-zinc-500 line-clamp-2">{post.content}</p>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </StudentCard>
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-        <StatCard label="출석률" value={`${studentData.stats.weeklyAttendanceRate}%`} />
-        <StatCard label="제출률" value={`${studentData.stats.assignmentSubmitRate}%`} />
-        <StatCard label="평균점수" value={`${studentData.stats.averageScore}점`} />
+        <StatCard label="제출률" value={`${submitRate}%`} />
+        <StatCard label="첨삭 완료 수" value={`${reviewedCount}건`} />
+        <StatCard label="평균점수" value={averageScore === null ? "-" : `${averageScore.toFixed(1)}점`} />
       </div>
 
       <StudentCard>
         <h2 className="text-sm font-semibold text-[#06091F]">수강 중 강의</h2>
-        <div className="mt-3 space-y-2">
-          {studentData.courses.map((course) => (
-            <CourseItem key={course.id} {...course} />
-          ))}
-        </div>
+        {lectureItems.length === 0 ? (
+          <p className="mt-3 text-sm text-[#6470BF]">등록된 강의가 없습니다.</p>
+        ) : (
+          <div className="mt-3 space-y-2">
+            {lectureItems.map((course) => (
+              <CourseItem key={course.id} {...course} />
+            ))}
+          </div>
+        )}
       </StudentCard>
     </StudentShell>
   );

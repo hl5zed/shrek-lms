@@ -15,6 +15,7 @@ export default async function StudentLecturesPage() {
       title,
       description,
       video_url,
+      audio_url,
       created_at,
       classes!inner ( name, class_students!inner ( student_id ) )
     `)
@@ -61,6 +62,18 @@ export default async function StudentLecturesPage() {
                   </a>
                 )}
               </div>
+              {lec.audio_url && (
+                <div className="mt-3">
+                  <audio
+                    controls
+                    src={lec.audio_url}
+                    className="w-full rounded-lg"
+                    preload="metadata"
+                  >
+                    브라우저가 오디오 재생을 지원하지 않습니다.
+                  </audio>
+                </div>
+              )}
             </li>
           ))}
         </ul>
