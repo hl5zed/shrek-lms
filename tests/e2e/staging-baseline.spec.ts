@@ -313,8 +313,8 @@ test.describe("Round 1 staging baseline QA", () => {
 
     await page.goto(resolveUrl("/student/dashboard"));
     await expect(page).toHaveURL(/\/student\/dashboard/);
-    await expect(page.getByText(/안녕하세요,\s*.*님/)).toBeVisible();
-    await expect(page.getByRole("heading", { name: "수강 중 강의", exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "학생 대시보드", exact: true })).toBeVisible();
+    await expect(page.getByText("이번 주 과제를 확인합니다.")).toBeVisible();
 
     await page.goto(resolveUrl("/student/lectures"));
     await expect(page).toHaveURL(/\/student\/lectures/);

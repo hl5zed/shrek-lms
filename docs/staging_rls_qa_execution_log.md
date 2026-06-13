@@ -356,3 +356,62 @@ production 반영 여부는 이 로그의 PASS 결과를 근거로 별도 판단
 - 테스트 코드 문제: 있음 (타임아웃 부족, 스펙 보정 후 해소)
 - 앱 버그: 없음
 - 데이터/계정 문제: 없음 (local 기준 정상 로그인/접근 확인)
+
+---
+
+## 14. RLS 적용 전 기준선 QA 재실행 (원격 STAGING_BASE_URL)
+
+| 항목 | 내용 |
+| --- | --- |
+| 실행 날짜 | 2026-06-12 |
+| 실행 시작 시각 | 2026-06-12 21:17 (UTC+7) |
+| 실행 종료 시각 | 2026-06-12 21:18 (UTC+7) |
+| 실행 환경 | staging (`http://213.35.124.213:3000`) |
+| 실행 명령 1 | `npx playwright install --with-deps chromium` |
+| 실행 명령 2 | `npx playwright test tests/e2e/staging-baseline.spec.ts --reporter=list` |
+| 대상 스펙 | `tests/e2e/staging-baseline.spec.ts` |
+
+### 실행 전 설정
+
+- `.env.local` 수정:
+  - `STAGING_BASE_URL=http://213.35.124.213:3000`
+
+### 1차 실행 결과
+
+- 결과: 3 PASS / 2 FAIL
+- FAIL 항목:
+  1. `admin 로그인 및 /admin/* 접근`
+     - 증상: `/admin/feedback` 진입 시 "첨삭 관리" 헤더 미노출
+  2. `student A 로그인 및 /student/* + lectures/feedback 화면 접근`
+     - 증상: 학생 대시보드 인사 문구(`안녕하세요, ...님`) 기대값 불일치
+
+### 실패 원인 분류 (1차)
+
+- 테스트 코드 문제:
+  - student 케이스의 기대 문구가 현재 UI와 불일치
+  - 조치: `tests/e2e/staging-baseline.spec.ts`에서 학생 대시보드 검증 대상을
+    - `heading: 학생 대시보드`
+    - `이번 주 과제를 확인합니다.`
+    로 최소 수정
+- 앱 버그(또는 배포 이슈):
+  - admin 케이스에서 `/admin/feedback`가 404 페이지로 응답
+  - 근거: Playwright `error-context.md` 스냅샷에 `heading "404"` 노출
+
+### 2차 실행 결과 (spec 수정 후)
+
+- 결과: 4 PASS / 1 FAIL
+- 최종 FAIL:
+  - `admin 로그인 및 /admin/* 접근` (동일하게 `/admin/feedback` 404)
+
+### console / network 오류 확인
+
+- teacher/student/parent/logged-out 케이스: console error 및 4xx/5xx 네트워크 오류 미검출
+- admin FAIL 케이스: 404 페이지 노출로 기능 검증 실패
+
+### 최종 판정 (이번 실행)
+
+- 기준선 QA: **BLOCKED**
+- 테스트 코드 문제: **있음 (수정 완료, student 케이스 PASS 확인)**
+- 앱 버그/배포 이슈: **있음 (`/admin/feedback` 404)**
+- 상세 이슈 문서:
+  - `docs/manual_role_flow_qa_issue_report_round1_staging_baseline_2026-06-12.md`
