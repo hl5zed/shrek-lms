@@ -1,0 +1,51 @@
+name: Deploy to OCI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: OCI 서버 배포
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: 배포 시작 알림
+        run: echo "🚀 배포 시작 - $(date '+%Y-%m-%d %H:%M:%S')"
+
+      - name: SSH로 OCI 서버 접속 및 배포
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.OCI_HOST }}
+          username: ${{ secrets.OCI_USER }}
+          key: ${{ secrets.OCI_SSH_KEY }}
+          port: ${{ secrets.OCI_PORT || 22 }}
+          script: |
+            set -e
+
+            echo "📁 프로젝트 디렉토리 이동"
+            cd ${{ secrets.OCI_APP_DIR }}
+
+            echo "⬇️  최신 코드 pull"
+            git pull origin main
+
+            echo "📦 의존성 설치 (변경 시에만)"
+            npm ci --production=false
+
+            echo "🔨 Next.js 빌드"
+            npm run build
+
+            echo "🔄 서버 재시작 (PM2)"
+            pm2 restart shrek-lms || pm2 start npm --name "shrek-lms" -- start
+
+            echo "✅ 배포 완료"
+
+      - name: 배포 완료 알림
+        if: success()
+        run: echo "✅ OCI 배포 성공"
+
+      - name: 배포 실패 알림
+        if: failure()
+        run: echo "❌ OCI 배포 실패 - GitHub Actions 로그를 확인하세요"

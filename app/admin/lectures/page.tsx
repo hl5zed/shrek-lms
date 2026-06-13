@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Card from "@/components/ui/Card";
 import { createClient } from "@/lib/supabase/server";
+import LectureAdminActions from "@/components/lecture/LectureAdminActions";
 
 // URL 필터 파라미터를 안전하게 해석합니다.
 function resolveClassFilter(classId: string | undefined): string {
@@ -43,8 +44,10 @@ export default async function AdminLecturesPage({
     .select(`
       id,
       title,
+      description,
       material_url,
       video_url,
+      audio_url,
       created_at,
       class_id,
       classes ( name, teacher_id )
@@ -80,9 +83,11 @@ export default async function AdminLecturesPage({
     return {
       id: lecture.id,
       title: lecture.title?.trim() ? lecture.title : "제목 없음",
+      description: lecture.description?.trim() ? lecture.description : "",
       className: classInfo?.name?.trim() ? classInfo.name : "반 정보 없음",
       teacherName,
       videoUrl: lecture.video_url?.trim() ? lecture.video_url : "",
+      audioUrl: lecture.audio_url?.trim() ? lecture.audio_url : "",
       materialUrl: lecture.material_url?.trim() ? lecture.material_url : "",
       createdAtText: lecture.created_at ? new Date(lecture.created_at).toLocaleDateString("ko-KR") : "등록일 정보 없음",
     };
@@ -91,23 +96,24 @@ export default async function AdminLecturesPage({
   // 콘텐츠 타입은 실제 컬럼(video_url, material_url) 기준으로 판별합니다.
   const typedRows = rows.map((row) => {
     const hasVideo = row.videoUrl.length > 0;
+    const hasAudio = row.audioUrl.length > 0;
     const hasMaterial = row.materialUrl.length > 0;
-    const type: Exclude<ContentTypeFilter, "all" | "audio"> = hasVideo ? "video" : "material";
-    const provider = hasVideo ? detectVideoProvider(row.videoUrl) : "PDF";
+    const type: ContentTypeFilter = hasVideo ? "video" : hasAudio ? "audio" : "material";
+    const provider = hasVideo ? detectVideoProvider(row.videoUrl) : hasAudio ? "음성" : "PDF";
 
     return {
       ...row,
       hasVideo,
+      hasAudio,
       hasMaterial,
       type,
       provider,
-      typeLabel: hasVideo ? "영상" : "PDF/자료",
+      typeLabel: hasVideo ? "영상" : hasAudio ? "음성" : "PDF/자료",
     };
   });
 
   const filteredRows = typedRows.filter((row) => {
     if (contentTypeFilter === "all") return true;
-    if (contentTypeFilter === "audio") return false;
     return row.type === contentTypeFilter;
   });
 
@@ -222,13 +228,16 @@ export default async function AdminLecturesPage({
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {filteredRows.map((row) => {
             const isVideoCard = row.type === "video";
+            const isAudioCard = row.type === "audio";
             const cardTopClass = isVideoCard
               ? "bg-gradient-to-r from-indigo-600 to-indigo-500"
+              : isAudioCard
+                ? "bg-gradient-to-r from-purple-600 to-violet-500"
               : "bg-gradient-to-r from-rose-500 to-red-500";
             const content = (
               <Card className="overflow-hidden transition hover:shadow-md">
                 <div className={`${cardTopClass} px-4 py-5 text-white`}>
-                  <p className="text-xs font-semibold uppercase tracking-wide">{isVideoCard ? row.provider : "PDF 자료"}</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide">{isVideoCard || isAudioCard ? row.provider : "PDF 자료"}</p>
                 </div>
                 <div className="p-4">
                   <div className="mb-2 flex items-start justify-between gap-2">
@@ -245,6 +254,8 @@ export default async function AdminLecturesPage({
 
                   {isVideoCard ? (
                     <p className="mt-3 text-xs font-medium text-indigo-600">상세 보기 →</p>
+                  ) : isAudioCard ? (
+                    <audio controls src={row.audioUrl} className="mt-3 w-full" />
                   ) : (
                     <div className="mt-3">
                       {row.materialUrl ? (
@@ -265,12 +276,25 @@ export default async function AdminLecturesPage({
               </Card>
             );
 
-            return isVideoCard ? (
-              <Link key={row.id} href={`/admin/lectures/${row.id}`}>
-                {content}
-              </Link>
-            ) : (
-              <div key={row.id}>{content}</div>
+            return (
+              <div key={row.id}>
+                {isVideoCard ? (
+                  <Link href={`/admin/lectures/${row.id}`}>
+                    {content}
+                  </Link>
+                ) : (
+                  content
+                )}
+                <div className="mt-2">
+                  <LectureAdminActions
+                    lectureId={row.id}
+                    title={row.title}
+                    description={row.description}
+                    videoUrl={row.videoUrl}
+                    materialUrl={row.materialUrl}
+                  />
+                </div>
+              </div>
             );
           })}
         </div>

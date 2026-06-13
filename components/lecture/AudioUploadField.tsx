@@ -23,7 +23,8 @@ export default function AudioUploadField() {
     setStatus("uploading");
     setFileName(file.name);
 
-    const path = `${Date.now()}_${file.name.replace(/\s+/g, "_")}`;
+    const ext = file.name.split(".").pop() ?? "mp3";
+    const path = `${Date.now()}.${ext}`;
 
     const { data, error } = await supabase.storage
       .from("lecture-audio")
