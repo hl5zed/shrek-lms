@@ -101,8 +101,30 @@ function isImageFile(file: SubmissionFile): boolean {
   return lowerType.startsWith("image/") || /\.(png|jpe?g|gif|webp)$/i.test(lowerName);
 }
 
-function FileItem({ file }: { file: SubmissionFile }) {
+function FileItem({
+  file,
+  onDelete,
+  onRename,
+}: {
+  file: SubmissionFile;
+  onDelete: () => void | Promise<void>;
+  onRename: (newName: string) => void | Promise<void>;
+}) {
   const [isOpening, setIsOpening] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [draftName, setDraftName] = useState(file.name ?? "");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setDraftName(file.name ?? "");
+  }, [file.name]);
+
+  useEffect(() => {
+    if (isEditing) {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }
+  }, [isEditing]);
 
   async function handleOpen() {
     if (isOpening) return;
@@ -137,21 +159,81 @@ function FileItem({ file }: { file: SubmissionFile }) {
     window.open(resolvedUrl, "_blank", "noopener,noreferrer");
   }
 
+  async function handleDeleteClick() {
+    if (!confirm("이 파일을 삭제하시겠습니까?")) return;
+    await onDelete();
+  }
+
+  async function commitRename() {
+    const nextName = draftName.trim();
+    setIsEditing(false);
+    if (!nextName) return;
+    if (nextName === (file.name ?? "")) return;
+    await onRename(nextName);
+  }
+
   return (
     <li>
-      <button
-        type="button"
-        onClick={handleOpen}
-        disabled={isOpening}
-        className="flex w-full items-center justify-between rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        <span className="truncate text-zinc-700">
-          {getFileIcon(file.type, file.name)} {file.name ?? file.path ?? file.url ?? "파일"}
-        </span>
-        <span className="ml-2 shrink-0 text-xs text-zinc-500">
-          {isOpening ? "열기 중..." : `${formatFileSize(file.size)} · 열기`}
-        </span>
-      </button>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={handleOpen}
+          disabled={isOpening || isEditing}
+          className="flex w-full items-center justify-between rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <span className="flex min-w-0 flex-1 items-center text-zinc-700">
+            <span className="mr-1 shrink-0">{getFileIcon(file.type, file.name)}</span>
+            {isEditing ? (
+              <input
+                ref={inputRef}
+                value={draftName}
+                onChange={(event) => setDraftName(event.target.value)}
+                onClick={(event) => event.stopPropagation()}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    void commitRename();
+                  }
+                  if (event.key === "Escape") {
+                    setDraftName(file.name ?? "");
+                    setIsEditing(false);
+                  }
+                }}
+                onBlur={() => {
+                  void commitRename();
+                }}
+                className="h-7 w-full rounded border border-zinc-300 bg-white px-2 text-sm outline-none focus:border-indigo-400"
+              />
+            ) : (
+              <span className="truncate">{file.name ?? file.path ?? file.url ?? "파일"}</span>
+            )}
+          </span>
+          <span className="ml-2 shrink-0 text-xs text-zinc-500">
+            {isOpening ? "열기 중..." : `${formatFileSize(file.size)} · 열기`}
+          </span>
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setDraftName(file.name ?? "");
+            setIsEditing(true);
+          }}
+          className="rounded border border-zinc-200 px-2 py-1 text-xs text-zinc-600 hover:bg-zinc-50"
+          aria-label="파일명 수정"
+        >
+          ✏️
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            void handleDeleteClick();
+          }}
+          className="rounded border border-red-200 px-2 py-1 text-xs text-red-600 hover:bg-red-50"
+          aria-label="파일 삭제"
+        >
+          🗑️
+        </button>
+      </div>
     </li>
   );
 }
@@ -186,8 +268,11 @@ export default function SubmissionsClient({
   const [selectedId, setSelectedId] = useState<string>(rows[0]?.id ?? "");
   const [saveButtonText, setSaveButtonText] = useState("임시저장");
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState<"text" | "image" | "file">("text");
   const [uploadStatus, setUploadStatus] = useState<"idle" | "uploading" | "done" | "error">("idle");
   const [uploadError, setUploadError] = useState("");
+  const [draftText, setDraftText] = useState(rows[0]?.contentText ?? "");
+  const [textSaveStatus, setTextSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const filteredRows = useMemo(() => {
@@ -205,6 +290,16 @@ export default function SubmissionsClient({
     [filteredRows, selectedId],
   );
   const selectedFiles = selectedRow ? normalizeFiles(selectedRow.fileUrls) : [];
+  const tabbedFiles = useMemo(() => {
+    return selectedFiles
+      .map((file, index) => ({ file, index }))
+      .filter(({ file }) => {
+        const lowerName = (file.name ?? "").toLowerCase();
+        if (activeTab === "image") return isImageFile(file) || lowerName.endsWith(".pdf");
+        if (activeTab === "file") return !(isImageFile(file) || lowerName.endsWith(".pdf"));
+        return false;
+      });
+  }, [selectedFiles, activeTab]);
   const pendingCount = rows.filter((row) => !row.isReviewed).length;
   const hasSelectedRow = Boolean(selectedRow);
 
@@ -227,6 +322,21 @@ export default function SubmissionsClient({
       setSelectedId(filteredRows[0]?.id ?? "");
     }
   }, [filteredRows, selectedRow]);
+
+  useEffect(() => {
+    if (!selectedRow) return;
+    if (selectedRow.submitType === "text") setActiveTab("text");
+    else if (selectedRow.submitType === "file") {
+      const hasImage = normalizeFiles(selectedRow.fileUrls).some(
+        (f) => isImageFile(f) || (f.name ?? "").toLowerCase().endsWith(".pdf"),
+      );
+      setActiveTab(hasImage ? "image" : "file");
+    } else setActiveTab("text");
+  }, [selectedRow?.id]);
+
+  useEffect(() => {
+    setDraftText(selectedRow?.contentText ?? "");
+  }, [selectedRow?.id]);
 
   useEffect(() => {
     return () => {
@@ -277,6 +387,81 @@ export default function SubmissionsClient({
 
     setUploadStatus("done");
     // 목록 새로고침
+    router.refresh();
+  }
+
+  async function handleFileDelete(fileIndex: number) {
+    if (!selectedRow) return;
+    const targetFile = selectedFiles[fileIndex];
+    if (!targetFile) return;
+
+    if (targetFile.path) {
+      const { error: removeError } = await supabase.storage.from("submissions").remove([targetFile.path]);
+      if (removeError) {
+        setUploadStatus("error");
+        setUploadError("Storage 삭제 실패: " + removeError.message);
+        return;
+      }
+    }
+
+    const updatedFiles = selectedRow.fileUrls.filter((_, index) => index !== fileIndex);
+    const { error: updateError } = await supabase
+      .from("submissions")
+      .update({ file_urls: updatedFiles })
+      .eq("id", selectedRow.id);
+
+    if (updateError) {
+      setUploadStatus("error");
+      setUploadError("DB 업데이트 실패: " + updateError.message);
+      return;
+    }
+
+    router.refresh();
+  }
+
+  async function handleFileRename(fileIndex: number, newName: string) {
+    if (!selectedRow) return;
+    const trimmedName = newName.trim();
+    if (!trimmedName) return;
+
+    const updatedFiles = selectedRow.fileUrls.map((item, index) => {
+      if (index !== fileIndex) return item;
+      if (typeof item === "object" && item !== null) {
+        return {
+          ...(item as Record<string, unknown>),
+          name: trimmedName,
+        };
+      }
+      return item;
+    });
+
+    const { error: updateError } = await supabase
+      .from("submissions")
+      .update({ file_urls: updatedFiles })
+      .eq("id", selectedRow.id);
+
+    if (updateError) {
+      setUploadStatus("error");
+      setUploadError("DB 업데이트 실패: " + updateError.message);
+      return;
+    }
+
+    router.refresh();
+  }
+
+  async function handleTextSave() {
+    if (!selectedRow) return;
+    setTextSaveStatus("saving");
+    const { error } = await supabase
+      .from("submissions")
+      .update({ content_text: draftText })
+      .eq("id", selectedRow.id);
+    if (error) {
+      setTextSaveStatus("error");
+      return;
+    }
+    setTextSaveStatus("saved");
+    setTimeout(() => setTextSaveStatus("idle"), 2000);
     router.refresh();
   }
 
@@ -467,30 +652,62 @@ export default function SubmissionsClient({
                   </p>
 
                   <div className="mt-4 flex items-center gap-2">
-                    <span className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-medium text-indigo-700">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("text")}
+                      className={`rounded-full px-3 py-1 text-xs font-medium ${
+                        activeTab === "text"
+                          ? "bg-indigo-100 text-indigo-700"
+                          : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+                      }`}
+                    >
                       텍스트 직접 작성
-                    </span>
-                    <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("image")}
+                      className={`rounded-full px-3 py-1 text-xs font-medium ${
+                        activeTab === "image"
+                          ? "bg-amber-100 text-amber-700"
+                          : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+                      }`}
+                    >
                       이미지/PDF 업로드
-                    </span>
-                    <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("file")}
+                      className={`rounded-full px-3 py-1 text-xs font-medium ${
+                        activeTab === "file"
+                          ? "bg-blue-100 text-blue-700"
+                          : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+                      }`}
+                    >
                       파일 업로드
-                    </span>
+                    </button>
                   </div>
                 </>
               )}
             </div>
 
-            <div className="rounded-xl border border-zinc-200 bg-white p-5">
+            {activeTab !== "text" && (
+              <div className="rounded-xl border border-zinc-200 bg-white p-5">
               <div className="mb-3 flex items-center justify-between">
-                <h3 className="font-semibold text-zinc-900">파일 업로드</h3>
+                <h3 className="font-semibold text-zinc-900">
+                  {activeTab === "image" ? "이미지 / PDF 업로드" : "파일 업로드"}
+                </h3>
                 <span className="text-xs text-zinc-400">JPG · PNG · PDF · DOCX · 최대 50MB</span>
               </div>
 
-              {selectedFiles.length > 0 && (
+              {tabbedFiles.length > 0 && (
                 <ul className="mb-3 space-y-2">
-                  {selectedFiles.map((file, index) => (
-                    <FileItem key={`${file.path ?? file.url ?? file.name ?? "file"}-${index}`} file={file} />
+                  {tabbedFiles.map(({ file, index }) => (
+                    <FileItem
+                      key={`${file.path ?? file.url ?? file.name ?? "file"}-${index}`}
+                      file={file}
+                      onDelete={() => handleFileDelete(index)}
+                      onRename={(newName) => handleFileRename(index, newName)}
+                    />
                   ))}
                 </ul>
               )}
@@ -498,7 +715,7 @@ export default function SubmissionsClient({
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".jpg,.jpeg,.png,.pdf,.docx"
+                accept={activeTab === "image" ? ".jpg,.jpeg,.png,.gif,.webp,.pdf" : ".docx,.doc,.txt,.hwp,.pdf"}
                 className="sr-only"
                 onChange={handleFileUpload}
                 disabled={!selectedRow || uploadStatus === "uploading"}
@@ -516,14 +733,17 @@ export default function SubmissionsClient({
                 ) : (
                   <>
                     <p className="text-sm text-zinc-400">파일을 드래그하거나 클릭하여 업로드</p>
-                    <p className="mt-1 text-xs text-zinc-400">손글씨 원고지 사진도 첨부 가능</p>
+                    <p className="mt-1 text-xs text-zinc-400">
+                      {activeTab === "image" ? "손글씨 원고지 사진 또는 PDF 파일" : "Word, 한글, 텍스트 파일"}
+                    </p>
                   </>
                 )}
               </button>
               {uploadStatus === "error" && (
                 <p className="mt-1 text-xs text-red-500">{uploadError}</p>
               )}
-            </div>
+              </div>
+            )}
           </div>
 
           <div>
@@ -531,26 +751,50 @@ export default function SubmissionsClient({
               <div className="mb-3 flex items-center justify-between">
                 <h3 className="font-semibold text-zinc-900">원고 작성</h3>
                 <span className="text-sm font-medium text-indigo-600">
-                  {selectedRow?.wordCount ?? 0} / 1,200자
+                  {draftText.length} / 1,200자
                 </span>
               </div>
 
               <textarea
-                readOnly
-                value={selectedRow?.contentText ?? ""}
+                value={draftText}
+                onChange={(event) => setDraftText(event.target.value)}
                 placeholder="여기에 논술문을 작성하세요. 주장을 먼저 쓰고, 근거를 구체적인 사례와 함께 전개해 보세요..."
                 className="min-h-[300px] w-full flex-1 resize-none rounded-lg border border-zinc-200 bg-white p-3 text-sm leading-6 text-zinc-800 outline-none"
               />
 
               <div className="mt-3 flex justify-between text-sm">
                 <p className="text-zinc-500">최소 800자 이상 작성</p>
-                {(selectedRow?.wordCount ?? 0) >= 800 ? (
+                {draftText.length >= 800 ? (
                   <p className="font-medium text-green-600">✓ 기준 충족</p>
-                ) : (selectedRow?.wordCount ?? 0) > 0 ? (
+                ) : draftText.length > 0 ? (
                   <p className="font-medium text-red-600">기준 미달</p>
                 ) : (
                   <p className="font-medium text-zinc-400">기준 미달</p>
                 )}
+              </div>
+
+              <div className="mt-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    void handleTextSave();
+                  }}
+                  className={`h-9 rounded-lg px-4 text-sm font-medium text-white ${
+                    textSaveStatus === "error"
+                      ? "bg-red-500"
+                      : textSaveStatus === "saved"
+                        ? "bg-emerald-600"
+                        : "bg-indigo-600 hover:bg-indigo-700"
+                  }`}
+                >
+                  {textSaveStatus === "saving"
+                    ? "저장 중…"
+                    : textSaveStatus === "saved"
+                      ? "저장됨 ✓"
+                      : textSaveStatus === "error"
+                        ? "저장 실패"
+                        : "저장"}
+                </button>
               </div>
 
               {selectedRow ? (
