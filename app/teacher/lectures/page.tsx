@@ -24,9 +24,9 @@ export default async function TeacherLecturesPage() {
     .order("created_at", { ascending: false });
 
   return (
-    <div className="mx-auto w-full max-w-6xl overflow-x-hidden">
+    <div className="w-full overflow-x-hidden">
       {/* 페이지 헤더 */}
-      <div className="mb-6 flex flex-col gap-3 lg:mb-8 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between lg:mb-8">
         <div className="min-w-0">
           <h1 className="break-keep text-xl font-bold text-zinc-900 lg:text-2xl">강의</h1>
           <p className="mt-1 text-sm text-zinc-500">등록한 강의 목록입니다.</p>
