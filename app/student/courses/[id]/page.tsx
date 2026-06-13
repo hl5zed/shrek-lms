@@ -26,6 +26,7 @@ export default async function StudentLectureDetailPage({
       title,
       description,
       video_url,
+      audio_url,
       material_url,
       created_at,
       class_id,
@@ -62,6 +63,7 @@ export default async function StudentLectureDetailPage({
   const teacherName = classInfo?.profiles?.name ?? "담당 강사 없음";
   const className = classInfo?.name ?? "반 정보 없음";
   const videoUrl = lecture.video_url?.trim() || null;
+  const audioUrl = lecture.audio_url?.trim() || null;
   const materialUrl = lecture.material_url?.trim() || null;
   const embedUrl = videoUrl ? getEmbedUrl(videoUrl) : null;
   const createdAt = new Date(lecture.created_at).toLocaleDateString("ko-KR", {
@@ -110,6 +112,17 @@ export default async function StudentLectureDetailPage({
       {!videoUrl && (
         <StudentCard>
           <p className="text-sm text-[#6470BF]">아직 영상이 등록되지 않은 강의입니다.</p>
+        </StudentCard>
+      )}
+
+      {/* 강의 음성 파일 */}
+      {audioUrl && (
+        <StudentCard>
+          <p className="text-xs text-[#6470BF]">🎧 강의 음성</p>
+          <audio controls className="mt-2 w-full">
+            <source src={audioUrl} />
+            브라우저가 오디오 재생을 지원하지 않습니다.
+          </audio>
         </StudentCard>
       )}
 
