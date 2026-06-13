@@ -24,23 +24,23 @@ export default async function TeacherLecturesPage() {
     .order("created_at", { ascending: false });
 
   return (
-    <div>
+    <div className="mx-auto w-full max-w-6xl overflow-x-hidden">
       {/* 페이지 헤더 */}
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-zinc-900">강의</h1>
+      <div className="mb-6 flex flex-col gap-3 lg:mb-8 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="break-keep text-xl font-bold text-zinc-900 lg:text-2xl">강의</h1>
           <p className="mt-1 text-sm text-zinc-500">등록한 강의 목록입니다.</p>
         </div>
         <Link
           href="/teacher/lectures/new"
-          className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
+          className="inline-flex h-11 w-full items-center justify-center whitespace-nowrap rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 sm:h-10 sm:w-auto sm:px-4 sm:py-2.5"
         >
           + 강의 등록
         </Link>
       </div>
 
       {!lectures || lectures.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-zinc-200 bg-white p-16 text-center">
+        <div className="rounded-2xl border border-dashed border-zinc-200 bg-white p-8 text-center sm:p-12 lg:p-16">
           <p className="text-sm text-zinc-500">아직 등록된 강의가 없습니다.</p>
           <p className="mt-1 text-xs text-zinc-400">
             강의를 등록해 학생들이 학습할 콘텐츠를 안내해 주세요.
@@ -53,15 +53,15 @@ export default async function TeacherLecturesPage() {
           </Link>
         </div>
       ) : (
-        <ul className="space-y-3">
+        <ul className="grid grid-cols-1 gap-3 xl:grid-cols-2">
           {lectures.map((lec) => (
             <li
               key={lec.id}
-              className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-zinc-300"
+              className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm transition hover:border-zinc-300 sm:p-5"
             >
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  <p className="text-base font-semibold text-zinc-900">{lec.title}</p>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                <div className="min-w-0 flex-1">
+                  <p className="break-keep text-base font-semibold text-zinc-900">{lec.title}</p>
                   <p className="mt-0.5 text-xs text-zinc-400">
                     {(lec.classes as unknown as { name: string } | null)?.name ?? "반 정보 없음"} ·{" "}
                     {new Date(lec.created_at).toLocaleDateString("ko-KR")} 등록
@@ -75,7 +75,7 @@ export default async function TeacherLecturesPage() {
                     href={lec.video_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="shrink-0 rounded-lg border border-blue-200 px-3 py-1.5 text-xs font-medium text-blue-600 transition hover:bg-blue-50"
+                    className="inline-flex h-10 shrink-0 items-center justify-center whitespace-nowrap rounded-lg border border-blue-200 px-3 text-xs font-medium text-blue-600 transition hover:bg-blue-50 sm:h-auto sm:px-3 sm:py-1.5"
                   >
                     영상 보기
                   </a>

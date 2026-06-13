@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import Sidebar from "@/components/layout/Sidebar";
+import TeacherSidebarWrapper from "@/components/layout/TeacherSidebarWrapper";
 
 // 강사 영역 공통 레이아웃
 export default async function TeacherLayout({
@@ -24,9 +24,8 @@ export default async function TeacherLayout({
   if (profile?.role !== "teacher") redirect("/login");
 
   return (
-    <div className="flex h-screen bg-zinc-50">
-      <Sidebar role="teacher" name={profile.name ?? "강사"} />
-      <main className="flex-1 overflow-y-auto p-8">{children}</main>
-    </div>
+    <TeacherSidebarWrapper role="teacher" name={profile.name ?? "강사"}>
+      {children}
+    </TeacherSidebarWrapper>
   );
 }

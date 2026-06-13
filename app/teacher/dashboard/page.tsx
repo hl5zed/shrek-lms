@@ -48,13 +48,15 @@ export default async function TeacherDashboardPage() {
   return (
     <div>
       {/* 페이지 헤더 */}
-      <div className="mb-8">
+      <div className="mb-6 lg:mb-8">
         <div className="flex items-center justify-between gap-2">
           <div>
-            <h1 className="text-2xl font-bold text-zinc-900">강사 대시보드</h1>
+            <h1 className="text-xl font-bold text-zinc-900 lg:text-2xl">강사 대시보드</h1>
             <p className="mt-1 text-sm text-zinc-500">첨삭 대기 제출물을 확인합니다.</p>
           </div>
-          <LogoutButton />
+          <div className="hidden lg:block">
+            <LogoutButton />
+          </div>
         </div>
       </div>
 
@@ -68,7 +70,7 @@ export default async function TeacherDashboardPage() {
         ) : (
           <ul className="space-y-2">
             {noticePosts.map((post) => (
-              <li key={post.id} className="rounded-xl border border-zinc-200 bg-white p-4">
+              <li key={post.id} className="rounded-xl border border-zinc-200 bg-white p-3 lg:p-4">
                 <div className="flex items-center gap-2">
                   <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${CATEGORY_COLOR[post.category] ?? "bg-zinc-100 text-zinc-500"}`}>
                     {post.category}
@@ -108,7 +110,7 @@ export default async function TeacherDashboardPage() {
               <li key={sub.id}>
                 <Link
                   href={`/teacher/submissions/${sub.id}`}
-                  className="flex items-center justify-between rounded-xl border border-zinc-200 bg-white p-4 transition hover:border-blue-300 hover:shadow-sm"
+                  className="flex items-center justify-between rounded-xl border border-zinc-200 bg-white p-3 lg:p-4 transition hover:border-blue-300 hover:shadow-sm"
                 >
                   <div>
                     <p className="text-sm font-medium text-zinc-900">
