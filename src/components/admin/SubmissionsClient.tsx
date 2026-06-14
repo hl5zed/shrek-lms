@@ -101,6 +101,18 @@ function isImageFile(file: SubmissionFile): boolean {
   return lowerType.startsWith("image/") || /\.(png|jpe?g|gif|webp)$/i.test(lowerName);
 }
 
+function getDefaultTab(row: AdminSubmissionRow | null): "text" | "image" | "file" {
+  if (!row) return "text";
+  if (row.submitType === "text") return "text";
+  if (row.submitType === "file") {
+    const hasImage = normalizeFiles(row.fileUrls).some(
+      (f) => isImageFile(f) || (f.name ?? "").toLowerCase().endsWith(".pdf"),
+    );
+    return hasImage ? "image" : "file";
+  }
+  return "text";
+}
+
 function FileItem({
   file,
   onDelete,
@@ -114,10 +126,6 @@ function FileItem({
   const [isEditing, setIsEditing] = useState(false);
   const [draftName, setDraftName] = useState(file.name ?? "");
   const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    setDraftName(file.name ?? "");
-  }, [file.name]);
 
   useEffect(() => {
     if (isEditing) {
@@ -265,15 +273,21 @@ export default function SubmissionsClient({
 }: SubmissionsClientProps) {
   const router = useRouter();
   const saveTimerRef = useRef<number | null>(null);
-  const [selectedId, setSelectedId] = useState<string>(rows[0]?.id ?? "");
+  const [selectedId, setSelectedId] = useState<string>(() => {
+    if (typeof window === "undefined") return "";
+    return localStorage.getItem("submissions_last_id") ?? "";
+  });
   const [saveButtonText, setSaveButtonText] = useState("임시저장");
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<"text" | "image" | "file">("text");
+  const [tabBySubmission, setTabBySubmission] = useState<Record<string, "text" | "image" | "file">>({});
   const [uploadStatus, setUploadStatus] = useState<"idle" | "uploading" | "done" | "error">("idle");
   const [uploadError, setUploadError] = useState("");
-  const [draftText, setDraftText] = useState(rows[0]?.contentText ?? "");
+  const [draftTextBySubmission, setDraftTextBySubmission] = useState<Record<string, string>>({});
   const [textSaveStatus, setTextSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  void classes;
+  void assignments;
+  void subtitle;
 
   const filteredRows = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -289,7 +303,16 @@ export default function SubmissionsClient({
     () => filteredRows.find((row) => row.id === selectedId) ?? filteredRows[0] ?? null,
     [filteredRows, selectedId],
   );
-  const selectedFiles = selectedRow ? normalizeFiles(selectedRow.fileUrls) : [];
+  const selectedFiles = useMemo(
+    () => (selectedRow ? normalizeFiles(selectedRow.fileUrls) : []),
+    [selectedRow],
+  );
+  const activeTab = selectedRow
+    ? (tabBySubmission[selectedRow.id] ?? getDefaultTab(selectedRow))
+    : "text";
+  const draftText = selectedRow
+    ? (draftTextBySubmission[selectedRow.id] ?? selectedRow.contentText ?? "")
+    : "";
   const tabbedFiles = useMemo(() => {
     return selectedFiles
       .map((file, index) => ({ file, index }))
@@ -300,43 +323,11 @@ export default function SubmissionsClient({
         return false;
       });
   }, [selectedFiles, activeTab]);
-  const pendingCount = rows.filter((row) => !row.isReviewed).length;
   const hasSelectedRow = Boolean(selectedRow);
 
   const headerSubtitle = selectedRow
     ? `${selectedRow.assignmentTitle} · 마감 ${getDday(selectedRow.dueDate)} · 800~1,200자`
     : `전체 과제 · ${rows.length}건`;
-
-  useEffect(() => {
-    // 임시저장한 선택 항목이 현재 목록에 존재하면 우선 복원합니다.
-    const savedId = localStorage.getItem("submissions_last_id");
-    if (savedId && rows.some((row) => row.id === savedId)) {
-      setSelectedId(savedId);
-      return;
-    }
-    setSelectedId(rows[0]?.id ?? "");
-  }, [rows]);
-
-  useEffect(() => {
-    if (!selectedRow) {
-      setSelectedId(filteredRows[0]?.id ?? "");
-    }
-  }, [filteredRows, selectedRow]);
-
-  useEffect(() => {
-    if (!selectedRow) return;
-    if (selectedRow.submitType === "text") setActiveTab("text");
-    else if (selectedRow.submitType === "file") {
-      const hasImage = normalizeFiles(selectedRow.fileUrls).some(
-        (f) => isImageFile(f) || (f.name ?? "").toLowerCase().endsWith(".pdf"),
-      );
-      setActiveTab(hasImage ? "image" : "file");
-    } else setActiveTab("text");
-  }, [selectedRow?.id]);
-
-  useEffect(() => {
-    setDraftText(selectedRow?.contentText ?? "");
-  }, [selectedRow?.id]);
 
   useEffect(() => {
     return () => {
@@ -452,9 +443,10 @@ export default function SubmissionsClient({
   async function handleTextSave() {
     if (!selectedRow) return;
     setTextSaveStatus("saving");
+    const contentText = draftTextBySubmission[selectedRow.id] ?? selectedRow.contentText ?? "";
     const { error } = await supabase
       .from("submissions")
-      .update({ content_text: draftText })
+      .update({ content_text: contentText })
       .eq("id", selectedRow.id);
     if (error) {
       setTextSaveStatus("error");
@@ -652,9 +644,12 @@ export default function SubmissionsClient({
                   </p>
 
                   <div className="mt-4 flex items-center gap-2">
-                    <button
+                <button
                       type="button"
-                      onClick={() => setActiveTab("text")}
+                  onClick={() => {
+                    if (!selectedRow) return;
+                    setTabBySubmission((prev) => ({ ...prev, [selectedRow.id]: "text" }));
+                  }}
                       className={`rounded-full px-3 py-1 text-xs font-medium ${
                         activeTab === "text"
                           ? "bg-indigo-100 text-indigo-700"
@@ -663,9 +658,12 @@ export default function SubmissionsClient({
                     >
                       텍스트 직접 작성
                     </button>
-                    <button
+                <button
                       type="button"
-                      onClick={() => setActiveTab("image")}
+                  onClick={() => {
+                    if (!selectedRow) return;
+                    setTabBySubmission((prev) => ({ ...prev, [selectedRow.id]: "image" }));
+                  }}
                       className={`rounded-full px-3 py-1 text-xs font-medium ${
                         activeTab === "image"
                           ? "bg-amber-100 text-amber-700"
@@ -674,9 +672,12 @@ export default function SubmissionsClient({
                     >
                       이미지/PDF 업로드
                     </button>
-                    <button
+                <button
                       type="button"
-                      onClick={() => setActiveTab("file")}
+                  onClick={() => {
+                    if (!selectedRow) return;
+                    setTabBySubmission((prev) => ({ ...prev, [selectedRow.id]: "file" }));
+                  }}
                       className={`rounded-full px-3 py-1 text-xs font-medium ${
                         activeTab === "file"
                           ? "bg-blue-100 text-blue-700"
@@ -757,7 +758,10 @@ export default function SubmissionsClient({
 
               <textarea
                 value={draftText}
-                onChange={(event) => setDraftText(event.target.value)}
+                onChange={(event) => {
+                  if (!selectedRow) return;
+                  setDraftTextBySubmission((prev) => ({ ...prev, [selectedRow.id]: event.target.value }));
+                }}
                 placeholder="여기에 논술문을 작성하세요. 주장을 먼저 쓰고, 근거를 구체적인 사례와 함께 전개해 보세요..."
                 className="min-h-[300px] w-full flex-1 resize-none rounded-lg border border-zinc-200 bg-white p-3 text-sm leading-6 text-zinc-800 outline-none"
               />

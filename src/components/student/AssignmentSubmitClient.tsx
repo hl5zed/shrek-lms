@@ -83,7 +83,11 @@ export default function AssignmentSubmitClient({
   const saveTimerRef = useRef<number | null>(null);
 
   const [activeTab, setActiveTab] = useState<SubmitTab>("text");
-  const [essayText, setEssayText] = useState(initialText);
+  const [essayText, setEssayText] = useState(() => {
+    if (initialText.trim()) return initialText;
+    if (typeof window === "undefined") return initialText;
+    return localStorage.getItem(draftKey) ?? initialText;
+  });
   const [isDragOver, setIsDragOver] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
@@ -102,27 +106,11 @@ export default function AssignmentSubmitClient({
     return "border-red-200 bg-red-50 text-red-700";
   }, [statusMessage]);
 
-  const saveDraft = (content: string) => {
-    localStorage.setItem(draftKey, content);
-  };
-
   const handleManualDraftSave = () => {
-    saveDraft(essayText);
+    localStorage.setItem(draftKey, essayText);
     setToastMessage(`저장됨 ${formatNowTime()}`);
     window.setTimeout(() => setToastMessage(null), 2000);
   };
-
-  useEffect(() => {
-    if (initialText.trim()) {
-      setEssayText(initialText);
-      return;
-    }
-
-    const saved = localStorage.getItem(draftKey);
-    if (saved) {
-      setEssayText(saved);
-    }
-  }, [draftKey, initialText]);
 
   useEffect(() => {
     if (saveTimerRef.current) {
@@ -130,7 +118,7 @@ export default function AssignmentSubmitClient({
     }
 
     saveTimerRef.current = window.setTimeout(() => {
-      saveDraft(essayText);
+      localStorage.setItem(draftKey, essayText);
     }, DRAFT_SAVE_DEBOUNCE_MS);
 
     return () => {
@@ -138,7 +126,7 @@ export default function AssignmentSubmitClient({
         window.clearTimeout(saveTimerRef.current);
       }
     };
-  }, [essayText]);
+  }, [draftKey, essayText]);
 
   const handleSubmit = () => {
     if (isReadOnly) return;
