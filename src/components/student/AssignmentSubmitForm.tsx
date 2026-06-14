@@ -14,7 +14,7 @@ export default function AssignmentSubmitForm({
   initialText = "",
   readOnly = false,
 }: AssignmentSubmitFormProps) {
-  const [_, formAction, isPending] = useActionState(async (_prev: null, formData: FormData) => {
+  const [, formAction, isPending] = useActionState(async (_prev: null, formData: FormData) => {
     await action(formData);
     return null;
   }, null);

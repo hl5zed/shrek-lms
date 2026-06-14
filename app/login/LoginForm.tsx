@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
@@ -13,16 +13,10 @@ export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState("");
+  const status = searchParams.get("status");
+  const isSignupSuccess = status === "signup_success";
+  const [message, setMessage] = useState(isSignupSuccess ? "가입이 완료되었습니다. 이메일을 확인해주세요." : "");
   const [isError, setIsError] = useState(false);
-
-  useEffect(() => {
-    const status = searchParams.get("status");
-    if (status === "signup_success") {
-      setIsError(false);
-      setMessage("가입이 완료되었습니다. 이메일을 확인해주세요.");
-    }
-  }, [searchParams]);
 
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

@@ -18,7 +18,7 @@ export default function ImageUploadZone({ action, readOnly = false }: ImageUploa
   const [fileName, setFileName] = useState("");
   const [fileSize, setFileSize] = useState(0);
   const [clientMessage, setClientMessage] = useState("");
-  const [_, formAction, isPending] = useActionState(async (_prev: null, formData: FormData) => {
+  const [, formAction, isPending] = useActionState(async (_prev: null, formData: FormData) => {
     const file = formData.get("submission_file");
     if (!(file instanceof File) || file.size <= 0) {
       setClientMessage("파일을 먼저 선택해 주세요.");

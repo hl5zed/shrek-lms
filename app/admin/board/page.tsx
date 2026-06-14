@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
 import { adminSupabase, assertAdminSupabaseEnv } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import Card from "@/components/ui/Card";
@@ -33,7 +32,6 @@ export default async function AdminBoardPage({
 }) {
   assertAdminSupabaseEnv();
   const { category, target } = await searchParams;
-  const supabase = await createClient();
 
   // 글 목록 조회 (작성자 이름 포함)
   let query = adminSupabase

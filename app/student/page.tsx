@@ -40,7 +40,18 @@ export default async function StudentHomePage() {
         .in("class_id", classIds)
         .order("created_at", { ascending: false })
         .limit(5)
-    : { data: [] as any[] };
+    : {
+        data: [] as Array<{
+          id: string;
+          title: string | null;
+          description: string | null;
+          video_url: string | null;
+          material_url: string | null;
+          created_at: string;
+          class_id: string;
+          classes: { name?: string } | null;
+        }>,
+      };
 
   const lectures = recentLectures ?? [];
 
