@@ -1,12 +1,34 @@
 import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import Link from "next/link";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import { Table, TableContainer } from "@/components/ui/Table";
+import { adminSupabase, assertAdminSupabaseEnv } from "@/lib/supabase/admin";
+import DeleteParentButton from "@/components/admin/DeleteParentButton";
 
 // 관리자 학부모 목록 — 연결된 자녀 수 포함
 export default async function AdminParentsPage() {
+  assertAdminSupabaseEnv();
+
+  async function deleteParent(formData: FormData) {
+    "use server";
+    assertAdminSupabaseEnv();
+    const parentId = formData.get("parentId") as string;
+    if (!parentId) return;
+    try {
+      await adminSupabase.auth.admin.deleteUser(parentId);
+    } catch {
+      try {
+        await adminSupabase.from("profiles").delete().eq("id", parentId);
+      } catch { /* 에러 무시 */ }
+    }
+    revalidatePath("/admin/parents");
+    redirect("/admin/parents");
+  }
+
   const supabase = await createClient();
 
   const { data: parents } = await supabase
@@ -49,6 +71,7 @@ export default async function AdminParentsPage() {
                 <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">자녀 수</th>
                 <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">등록일</th>
                 <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">관리</th>
+                <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">삭제</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-50">
@@ -73,6 +96,13 @@ export default async function AdminParentsPage() {
                     <Button asChild variant="ghost" className="h-8 px-3 text-xs">
                       <Link href={`/admin/parents/${p.id}`}>자녀 관리</Link>
                     </Button>
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <DeleteParentButton
+                      action={deleteParent}
+                      parentId={p.id}
+                      parentName={p.name ?? "학부모"}
+                    />
                   </td>
                 </tr>
               ))}

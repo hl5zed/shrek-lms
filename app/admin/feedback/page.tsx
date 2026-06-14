@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import Card from "@/components/ui/Card";
 import { Table, TableContainer } from "@/components/ui/Table";
+import DeleteButton from "./DeleteButton";
 
 type FeedbackFilter = "all" | "pending" | "reviewed";
 
@@ -167,6 +168,7 @@ export default async function AdminFeedbackPage({
                 <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">첨삭 상태</th>
                 <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">경과 시간</th>
                 <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">담당 강사</th>
+                <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">삭제</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-50">
@@ -207,6 +209,9 @@ export default async function AdminFeedbackPage({
                     <Link href={`/admin/feedback/${row.id}`} className="block text-zinc-600">
                       {row.teacherName}
                     </Link>
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <DeleteButton submissionId={row.id} />
                   </td>
                 </tr>
               ))}

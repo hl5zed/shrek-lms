@@ -1,6 +1,10 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import Card from "@/components/ui/Card";
 import { createClient } from "@/lib/supabase/server";
+import { adminSupabase, assertAdminSupabaseEnv } from "@/lib/supabase/admin";
+import DeleteAssignmentButton from "@/components/admin/DeleteAssignmentButton";
 
 function resolveClassFilter(classId: string | undefined): string {
   return typeof classId === "string" ? classId.trim() : "";
@@ -23,6 +27,20 @@ export default async function AdminAssignmentsPage({
 }: {
   searchParams: Promise<{ classId?: string; tab?: string; q?: string }>;
 }) {
+  assertAdminSupabaseEnv();
+
+  async function deleteAssignment(formData: FormData) {
+    "use server";
+    assertAdminSupabaseEnv();
+    const assignmentId = formData.get("assignmentId") as string;
+    if (!assignmentId) return;
+    try {
+      await adminSupabase.from("assignments").delete().eq("id", assignmentId);
+    } catch { /* 에러 무시 */ }
+    revalidatePath("/admin/assignments");
+    redirect("/admin/assignments");
+  }
+
   const { classId, tab } = await searchParams;
   const classFilter = resolveClassFilter(classId);
   const tabValue = tab === "active" || tab === "closed" ? tab : "all";
@@ -148,7 +166,7 @@ export default async function AdminAssignmentsPage({
             className="h-10 w-full rounded-lg border border-zinc-200 px-3 text-sm outline-none focus:border-indigo-400 sm:w-64"
           />
           <Link
-            href="/teacher/assignments/new"
+            href="/admin/assignments/new"
             className="inline-flex h-10 items-center justify-center rounded-lg bg-indigo-600 px-4 text-sm font-semibold text-white transition hover:bg-indigo-700"
           >
             과제 생성
@@ -260,10 +278,9 @@ export default async function AdminAssignmentsPage({
               row.studentCount > 0 ? Math.min(100, Math.round((row.submittedCount / row.studentCount) * 100)) : 0;
 
             return (
-              <Link
+              <div
                 key={row.id}
-                href={`/admin/assignments/${row.id}`}
-                className="block overflow-hidden rounded-xl border border-zinc-200 bg-white transition hover:shadow-sm"
+                className="overflow-hidden rounded-xl border border-zinc-200 bg-white transition hover:shadow-sm"
               >
                 <div
                   className={`px-4 py-2 text-xs font-medium text-white ${
@@ -274,30 +291,41 @@ export default async function AdminAssignmentsPage({
                 </div>
                 <div className="space-y-3 p-4">
                   <div className="flex items-start justify-between gap-3">
-                    <h2 className="text-base font-semibold text-zinc-900">{row.title}</h2>
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-                        row.dueState === "past"
-                          ? "bg-zinc-100 text-zinc-700"
-                          : row.dueState === "soon"
-                            ? "bg-amber-100 text-amber-700"
-                            : "bg-indigo-100 text-indigo-700"
-                      }`}
-                    >
-                      {row.dueState === "past" ? "마감됨" : `${dLabel}일`}
-                    </span>
-                  </div>
-                  <p className="text-sm text-zinc-600">마감일: {row.dueDate}</p>
-                  <div>
-                    <div className="h-2 w-full rounded-full bg-zinc-100">
-                      <div className="h-2 rounded-full bg-indigo-500" style={{ width: `${progressPercent}%` }} />
+                    <Link href={`/admin/assignments/${row.id}`} className="min-w-0 flex-1">
+                      <h2 className="text-base font-semibold text-zinc-900 hover:text-indigo-700">{row.title}</h2>
+                    </Link>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                          row.dueState === "past"
+                            ? "bg-zinc-100 text-zinc-700"
+                            : row.dueState === "soon"
+                              ? "bg-amber-100 text-amber-700"
+                              : "bg-indigo-100 text-indigo-700"
+                        }`}
+                      >
+                        {row.dueState === "past" ? "마감됨" : `${dLabel}일`}
+                      </span>
+                      <DeleteAssignmentButton
+                        action={deleteAssignment}
+                        assignmentId={row.id}
+                        assignmentTitle={row.title}
+                      />
                     </div>
-                    <p className="mt-1 text-sm text-zinc-600">
-                      {row.submittedCount}/{row.studentCount}명 제출 ({progressPercent}%)
-                    </p>
                   </div>
+                  <Link href={`/admin/assignments/${row.id}`} className="block">
+                    <p className="text-sm text-zinc-600">마감일: {row.dueDate}</p>
+                    <div className="mt-2">
+                      <div className="h-2 w-full rounded-full bg-zinc-100">
+                        <div className="h-2 rounded-full bg-indigo-500" style={{ width: `${progressPercent}%` }} />
+                      </div>
+                      <p className="mt-1 text-sm text-zinc-600">
+                        {row.submittedCount}/{row.studentCount}명 제출 ({progressPercent}%)
+                      </p>
+                    </div>
+                  </Link>
                 </div>
-              </Link>
+              </div>
             );
           })}
         </div>

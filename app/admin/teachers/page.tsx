@@ -1,11 +1,33 @@
 import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import { Table, TableContainer } from "@/components/ui/Table";
 import Link from "next/link";
+import { adminSupabase, assertAdminSupabaseEnv } from "@/lib/supabase/admin";
+import DeleteTeacherButton from "@/components/admin/DeleteTeacherButton";
 
 // 관리자 강사 목록
 export default async function AdminTeachersPage() {
+  assertAdminSupabaseEnv();
+
+  async function deleteTeacher(formData: FormData) {
+    "use server";
+    assertAdminSupabaseEnv();
+    const teacherId = formData.get("teacherId") as string;
+    if (!teacherId) return;
+    try {
+      await adminSupabase.auth.admin.deleteUser(teacherId);
+    } catch {
+      try {
+        await adminSupabase.from("profiles").delete().eq("id", teacherId);
+      } catch { /* 에러 무시 */ }
+    }
+    revalidatePath("/admin/teachers");
+    redirect("/admin/teachers");
+  }
+
   const supabase = await createClient();
 
   const { data: teachers } = await supabase
@@ -42,6 +64,7 @@ export default async function AdminTeachersPage() {
                 <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">이메일</th>
                 <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">전화번호</th>
                 <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">등록일</th>
+                <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">삭제</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-50">
@@ -59,6 +82,13 @@ export default async function AdminTeachersPage() {
                   <td className="px-5 py-3.5 text-zinc-500">{t.phone ?? "—"}</td>
                   <td className="px-5 py-3.5 text-zinc-400">
                     {new Date(t.created_at).toLocaleDateString("ko-KR")}
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <DeleteTeacherButton
+                      action={deleteTeacher}
+                      teacherId={t.id}
+                      teacherName={t.name ?? "강사"}
+                    />
                   </td>
                 </tr>
               ))}

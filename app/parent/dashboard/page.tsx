@@ -1,9 +1,42 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
+import { revalidatePath } from "next/cache";
 import { adminSupabase, assertAdminSupabaseEnv } from "@/lib/supabase/admin";
 
 // 학부모 대시보드 — 인증/역할 검증은 app/parent/layout.tsx 에서 처리합니다.
 export default async function ParentDashboardPage() {
+  async function markAsRead(formData: FormData) {
+    "use server";
+    assertAdminSupabaseEnv();
+    const notificationId = formData.get("notificationId") as string;
+    try {
+      await adminSupabase
+        .from("notifications")
+        .update({ is_read: true })
+        .eq("id", notificationId);
+    } catch {
+      // 에러 무시
+    }
+    revalidatePath("/parent/dashboard");
+  }
+
+  async function markAllAsRead(formData: FormData) {
+    "use server";
+    assertAdminSupabaseEnv();
+    const parentId = formData.get("parentId") as string;
+    try {
+      await adminSupabase
+        .from("notifications")
+        .update({ is_read: true })
+        .eq("recipient_id", parentId)
+        .eq("type", "weekly_alert")
+        .eq("is_read", false);
+    } catch {
+      // 에러 무시
+    }
+    revalidatePath("/parent/dashboard");
+  }
+
   assertAdminSupabaseEnv();
   const supabase = await createClient();
 
@@ -37,12 +70,104 @@ export default async function ParentDashboardPage() {
     .map((row) => row.profiles as unknown as { id: string; name: string } | null)
     .filter(Boolean) as { id: string; name: string }[];
 
+  // 알림 조회 (관리자가 발송한 주간 알림)
+  const { data: rawNotifications } = await adminSupabase
+    .from("notifications")
+    .select("id, message, type, created_at, is_read")
+    .eq("recipient_id", user!.id)
+    .eq("type", "weekly_alert")
+    .order("created_at", { ascending: false })
+    .limit(20);
+
+  const notifications = (rawNotifications ?? []) as Array<{
+    id: string;
+    message: string;
+    type: string;
+    created_at: string;
+    is_read: boolean;
+  }>;
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
+
   return (
     <div>
       {/* 페이지 헤더 */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-zinc-900">학부모 대시보드</h1>
         <p className="mt-1 text-sm text-zinc-500">자녀의 학습 현황을 확인합니다.</p>
+      </div>
+
+      {/* 주간 알림방송 */}
+      <div className="mb-8">
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <h2 className="text-base font-semibold text-zinc-800">주간 알림방송</h2>
+            {unreadCount > 0 && (
+              <span className="rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-bold text-white">
+                새 알림 {unreadCount}
+              </span>
+            )}
+          </div>
+          {unreadCount > 0 && (
+            <form action={markAllAsRead}>
+              <input type="hidden" name="parentId" value={user!.id} />
+              <button
+                type="submit"
+                className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs text-zinc-600 hover:bg-zinc-50"
+              >
+                모두 읽음
+              </button>
+            </form>
+          )}
+        </div>
+
+        {notifications.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-zinc-200 bg-white p-8 text-center">
+            <p className="text-sm text-zinc-400">받은 주간 알림이 없습니다.</p>
+          </div>
+        ) : (
+          <ul className="space-y-2">
+            {notifications.map((notification) => (
+              <li
+                key={notification.id}
+                className={`rounded-xl border p-4 ${
+                  notification.is_read
+                    ? "border-zinc-200 bg-white"
+                    : "border-emerald-200 bg-emerald-50"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="whitespace-pre-line text-sm text-zinc-800">
+                      {notification.message}
+                    </p>
+                    <p className="mt-1.5 text-xs text-zinc-400">
+                      {new Date(notification.created_at).toLocaleDateString("ko-KR", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </p>
+                  </div>
+                  <div className="shrink-0">
+                    {notification.is_read ? (
+                      <span className="text-xs text-zinc-400">확인됨</span>
+                    ) : (
+                      <form action={markAsRead}>
+                        <input type="hidden" name="notificationId" value={notification.id} />
+                        <button
+                          type="submit"
+                          className="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100"
+                        >
+                          확인
+                        </button>
+                      </form>
+                    )}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       {/* 공지사항 */}

@@ -1,9 +1,13 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import { Table, TableContainer } from "@/components/ui/Table";
 import { getStudents, searchStudents } from "@/lib/lms/queries/students";
 import { createClient } from "@/lib/supabase/server";
+import { adminSupabase, assertAdminSupabaseEnv } from "@/lib/supabase/admin";
+import DeleteStudentButton from "@/components/admin/DeleteStudentButton";
 
 // 관리자 학생 목록
 export default async function AdminStudentsPage({
@@ -11,6 +15,28 @@ export default async function AdminStudentsPage({
 }: {
   searchParams: Promise<{ q?: string; classId?: string }>;
 }) {
+  assertAdminSupabaseEnv();
+
+  async function deleteStudent(formData: FormData) {
+    "use server";
+    assertAdminSupabaseEnv();
+    const studentId = formData.get("studentId") as string;
+    if (!studentId) return;
+
+    // 1. Supabase Auth 유저 삭제 (profiles 등 cascade 삭제)
+    try {
+      await adminSupabase.auth.admin.deleteUser(studentId);
+    } catch {
+      // auth 삭제 실패 시 profiles 직접 삭제 시도
+      try {
+        await adminSupabase.from("profiles").delete().eq("id", studentId);
+      } catch { /* 에러 무시 */ }
+    }
+
+    revalidatePath("/admin/students");
+    redirect("/admin/students");
+  }
+
   const { q, classId } = await searchParams;
   const [students, classesResult] = await Promise.all([
     q || classId ? searchStudents({ query: q, classId }) : getStudents(),
@@ -80,37 +106,50 @@ export default async function AdminStudentsPage({
           <Table>
             <thead>
               <tr className="border-b border-zinc-100 bg-zinc-50">
-                <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">이름</th>
-                <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">이메일</th>
-                <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">전화번호</th>
-                <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">수강반</th>
-                <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">학부모</th>
-                <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">등록일</th>
-                <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">관리</th>
+                <th className="px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-500 whitespace-nowrap">이름</th>
+                <th className="px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-500 whitespace-nowrap">이메일</th>
+                <th className="hidden px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-500 whitespace-nowrap sm:table-cell">전화번호</th>
+                <th className="px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-500 whitespace-nowrap">수강반</th>
+                <th className="hidden px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-500 whitespace-nowrap md:table-cell">학부모</th>
+                <th className="hidden px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-500 whitespace-nowrap lg:table-cell">등록일</th>
+                <th className="px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-500 whitespace-nowrap">관리</th>
+                <th className="px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-500 whitespace-nowrap">삭제</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-50">
               {students.map((s) => (
                 <tr key={s.id} className="transition hover:bg-zinc-50">
-                  <td className="px-5 py-3.5">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-700">
+                  <td className="px-3 py-2.5">
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-100 text-[11px] font-semibold text-blue-700">
                         {s.name?.charAt(0) ?? "?"}
                       </div>
-                      <span className="font-medium text-zinc-900">{s.name}</span>
+                      <span className="text-sm font-medium text-zinc-900 whitespace-nowrap">{s.name}</span>
                     </div>
                   </td>
-                  <td className="px-5 py-3.5 text-zinc-600">{s.email}</td>
-                  <td className="px-5 py-3.5 text-zinc-500">{s.phone ?? "—"}</td>
-                  <td className="px-5 py-3.5 text-zinc-500">{s.classLabel}</td>
-                  <td className="px-5 py-3.5 text-zinc-500">{s.parentCount}명</td>
-                  <td className="px-5 py-3.5 text-zinc-400">
+                  <td className="px-3 py-2.5 text-xs text-zinc-600 whitespace-nowrap">{s.email}</td>
+                  <td className="hidden px-3 py-2.5 text-xs text-zinc-500 whitespace-nowrap sm:table-cell">{s.phone ?? "—"}</td>
+                  <td className="px-3 py-2.5 text-xs text-zinc-500 max-w-[160px]">
+                    <span className="block truncate" title={s.classLabel}>{s.classLabel}</span>
+                  </td>
+                  <td className="hidden px-3 py-2.5 text-xs text-zinc-500 whitespace-nowrap md:table-cell">{s.parentCount}명</td>
+                  <td className="hidden px-3 py-2.5 text-xs text-zinc-400 whitespace-nowrap lg:table-cell">
                     {new Date(s.createdAt).toLocaleDateString("ko-KR")}
                   </td>
-                  <td className="px-5 py-3.5">
-                    <Button asChild variant="ghost" className="h-8 px-3 text-xs">
-                      <Link href={`/admin/students/${s.id}`}>상세 보기</Link>
-                    </Button>
+                  <td className="px-3 py-2.5">
+                    <Link
+                      href={`/admin/students/${s.id}`}
+                      className="inline-flex h-7 items-center justify-center whitespace-nowrap rounded-md border border-zinc-200 bg-white px-3 text-[11px] font-medium text-zinc-700 transition hover:border-indigo-300 hover:text-indigo-600"
+                    >
+                      상세 보기
+                    </Link>
+                  </td>
+                  <td className="px-3 py-2.5">
+                    <DeleteStudentButton
+                      action={deleteStudent}
+                      studentId={s.id}
+                      studentName={s.name ?? "학생"}
+                    />
                   </td>
                 </tr>
               ))}

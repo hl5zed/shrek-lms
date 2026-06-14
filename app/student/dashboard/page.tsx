@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import StudentShell from "@/src/components/student/StudentShell";
 import StatCard from "@/src/components/student/StatCard";
@@ -21,6 +22,41 @@ function average(values: number[]) {
 
 export default async function StudentDashboardPage() {
   assertAdminSupabaseEnv();
+
+  async function markNotifAsRead(formData: FormData) {
+    "use server";
+    assertAdminSupabaseEnv();
+    const supabaseInner = await createClient();
+    const { data: { user } } = await supabaseInner.auth.getUser();
+    if (!user) return;
+    const notifId = formData.get("notifId") as string;
+    try {
+      await adminSupabase
+        .from("notifications")
+        .update({ is_read: true })
+        .eq("id", notifId)
+        .eq("recipient_id", user.id);
+    } catch { /* 에러 무시 */ }
+    revalidatePath("/student/dashboard");
+  }
+
+  async function markAllNotifsAsRead() {
+    "use server";
+    assertAdminSupabaseEnv();
+    const supabaseInner = await createClient();
+    const { data: { user } } = await supabaseInner.auth.getUser();
+    if (!user) return;
+    try {
+      await adminSupabase
+        .from("notifications")
+        .update({ is_read: true })
+        .eq("recipient_id", user.id)
+        .eq("type", "student_alert")
+        .eq("is_read", false);
+    } catch { /* 에러 무시 */ }
+    revalidatePath("/student/dashboard");
+  }
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -127,6 +163,20 @@ export default async function StudentDashboardPage() {
     };
   });
 
+  // 학생 알림 조회
+  const { data: rawStudentNotifs } = await adminSupabase
+    .from("notifications")
+    .select("id, message, type, created_at, is_read")
+    .eq("recipient_id", user.id)
+    .eq("type", "student_alert")
+    .order("created_at", { ascending: false })
+    .limit(20);
+
+  const studentNotifs = (rawStudentNotifs ?? []) as Array<{
+    id: string; message: string; created_at: string; is_read: boolean;
+  }>;
+  const unreadNotifCount = studentNotifs.filter((n) => !n.is_read).length;
+
   // 공지사항: 전체 또는 학생 대상 공개 게시글
   const { data: noticePosts } = await adminSupabase
     .from("posts")
@@ -148,6 +198,67 @@ export default async function StudentDashboardPage() {
       <div className="rounded-2xl bg-[#EEF1FF] p-4">
         <p className="text-sm text-[#161D55]">안녕하세요, {profile?.name ?? "학생"}님!</p>
       </div>
+
+      {/* 알림 */}
+      {studentNotifs.length > 0 && (
+        <StudentCard>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <h2 className="text-sm font-semibold text-[#06091F]">알림</h2>
+              {unreadNotifCount > 0 && (
+                <span className="rounded-full bg-red-500 px-1.5 py-0.5 text-[9px] font-bold text-white">
+                  {unreadNotifCount}
+                </span>
+              )}
+            </div>
+            {unreadNotifCount > 0 && (
+              <form action={markAllNotifsAsRead}>
+                <button
+                  type="submit"
+                  className="text-[10px] text-[#6470BF] underline underline-offset-2"
+                >
+                  모두 읽음
+                </button>
+              </form>
+            )}
+          </div>
+          <ul className="mt-3 space-y-2">
+            {studentNotifs.map((notif) => (
+              <li
+                key={notif.id}
+                className={`rounded-lg border p-3 ${
+                  notif.is_read
+                    ? "border-[#D4D9F5] bg-white"
+                    : "border-indigo-200 bg-[#EEF1FF]"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <p className="whitespace-pre-line text-xs text-[#06091F]">{notif.message}</p>
+                  {!notif.is_read && (
+                    <form action={markNotifAsRead} className="shrink-0">
+                      <input type="hidden" name="notifId" value={notif.id} />
+                      <button
+                        type="submit"
+                        className="rounded-md border border-indigo-300 bg-white px-2 py-1 text-[10px] font-medium text-indigo-700 hover:bg-indigo-50"
+                      >
+                        확인
+                      </button>
+                    </form>
+                  )}
+                  {notif.is_read && (
+                    <span className="shrink-0 text-[10px] text-zinc-400">확인됨</span>
+                  )}
+                </div>
+                <p className="mt-1 text-[10px] text-zinc-400">
+                  {new Date(notif.created_at).toLocaleDateString("ko-KR", {
+                    month: "long", day: "numeric",
+                  })}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </StudentCard>
+      )}
 
       <StudentCard>
         <h2 className="text-sm font-semibold text-[#06091F]">공지사항</h2>

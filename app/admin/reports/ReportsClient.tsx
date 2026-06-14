@@ -34,6 +34,7 @@ type ReportsClientProps = {
   monthlyReportLines: string[];
   currentMonthLabel: string;
   onSendWeeklyAlert: (formData: FormData) => Promise<void>;
+  onSaveAlertDraft: (formData: FormData) => Promise<void>;
 };
 
 export default function ReportsClient({
@@ -57,6 +58,7 @@ export default function ReportsClient({
   monthlyReportLines,
   currentMonthLabel,
   onSendWeeklyAlert,
+  onSaveAlertDraft,
 }: ReportsClientProps) {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
@@ -82,12 +84,38 @@ export default function ReportsClient({
 
   return (
     <div className="space-y-4">
+      <div className="print-only-header hidden border-b-2 border-zinc-200 pb-3 mb-5">
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] font-semibold tracking-wide text-zinc-400 uppercase">슈렉샘 LMS &nbsp;·&nbsp; 논술 성장관리 플랫폼</span>
+          <span className="text-[11px] font-semibold text-zinc-500">월간 종합 리포트 &nbsp;·&nbsp; {currentMonthLabel}</span>
+        </div>
+        <div className="mt-1.5 flex items-center justify-between">
+          <span className="text-[10.5px] text-zinc-600">
+            {selectedParentName} 학부모님&nbsp;·&nbsp;{studentName}&nbsp;·&nbsp;{className}&nbsp;·&nbsp;담당: {teacherName}님&nbsp;·&nbsp;수강 {monthDiff}개월째
+          </span>
+          <span className="text-[10.5px] text-zinc-500 tabular-nums">
+            출석 {attendanceRate}%&nbsp;&nbsp;|&nbsp;&nbsp;과제 제출률 {submitRate}%&nbsp;&nbsp;|&nbsp;&nbsp;첨삭 완료 {reviewedCount}건&nbsp;&nbsp;|&nbsp;&nbsp;성장점수 {growthScore ?? "−"}점
+          </span>
+        </div>
+      </div>
       <style>{`
         @media print {
-          header, nav, [data-no-print] { display: none !important; }
-          body { background: white !important; }
+          aside, header, nav, [data-no-print] { display: none !important; }
+          body { background: white !important; margin: 0 !important; }
           .print-right-only { display: block !important; width: 100% !important; }
           .print-grid { display: block !important; }
+          .print-only-header { display: block !important; }
+
+          /* 페이지 여백 및 자동 페이지 넘김 */
+          @page { margin: 16mm 14mm; size: A4 portrait; }
+
+          /* 카드·섹션이 페이지 중간에서 잘리지 않도록 */
+          .space-y-4 > * { break-inside: avoid; }
+          .grid > * { break-inside: avoid; }
+          .rounded-xl { break-inside: avoid; }
+
+          /* 월간 리포트 카드는 항상 앞쪽에 표시 */
+          .print-right-only { break-before: auto; break-after: auto; }
         }
       `}</style>
 
@@ -117,6 +145,9 @@ export default function ReportsClient({
             <input type="hidden" name="parentId" value={selectedParentId} />
             <input type="hidden" name="parentEmail" value={selectedParentEmail} />
             <input type="hidden" name="studentName" value={studentName} />
+            {alertDraft.map((line, i) => (
+              <input key={i} type="hidden" name="alertLine" value={line} />
+            ))}
             <button
               type="submit"
               className="rounded-lg border border-emerald-300 bg-white px-4 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50"
@@ -137,6 +168,11 @@ export default function ReportsClient({
       {status === "sent" ? (
         <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
           주간 알림이 발송되었습니다. (이메일: {selectedParentEmail})
+        </p>
+      ) : null}
+      {status === "draft_saved" ? (
+        <p className="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm text-indigo-700">
+          미니 알림 문장이 저장되었습니다. 다음 주간 알림 발송 시 반영됩니다.
         </p>
       ) : null}
       {toastMessage ? (
@@ -161,7 +197,7 @@ export default function ReportsClient({
               className="h-9 rounded-lg border border-zinc-200 px-3 text-sm outline-none focus:border-indigo-400"
             >
               {parentOptions.map((option) => (
-                <option key={option.parentId} value={option.parentId}>
+                <option key={`${option.parentId}-${option.studentId}`} value={option.parentId}>
                   {option.parentName} · {option.studentName}
                 </option>
               ))}
@@ -177,47 +213,61 @@ export default function ReportsClient({
         </div>
       </Card>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-        <Card className="p-4">
-          <p className="text-xs text-zinc-500">이번달 출석</p>
-          <p className="mt-1 text-3xl font-bold text-zinc-900">{attendanceRate}%</p>
-          <p className="mt-1 text-xs text-emerald-600">{attendanceCountLabel}</p>
-        </Card>
-        <Card className="p-4">
-          <p className="text-xs text-zinc-500">과제 제출률</p>
-          <p className="mt-1 text-3xl font-bold text-zinc-900">{submitRate}%</p>
-          <p className="mt-1 text-xs text-emerald-600">{submitDeltaLabel}</p>
-        </Card>
-        <Card className="p-4">
-          <p className="text-xs text-zinc-500">첨삭 완료</p>
-          <p className="mt-1 text-3xl font-bold text-zinc-900">{reviewedCount}건</p>
-          <p className="mt-1 text-xs text-zinc-500">이번달</p>
-        </Card>
-        <Card className="p-4">
-          <p className="text-xs text-zinc-500">종합 성장점수</p>
-          <p className="mt-1 text-3xl font-bold text-indigo-700">{growthScore ?? "-"}</p>
-          <p className="mt-1 text-xs text-emerald-600">{growthDeltaLabel}</p>
-        </Card>
-      </div>
+      <Card className="p-3">
+        <div className="grid grid-cols-4 divide-x divide-zinc-100">
+          <div className="px-4 py-1 text-center first:pl-2 last:pr-2">
+            <p className="text-[10px] font-medium text-zinc-400">이번달 출석</p>
+            <p className="mt-0.5 text-xl font-bold text-zinc-900">{attendanceRate}%</p>
+            <p className="mt-0.5 text-[10px] text-zinc-400">{attendanceCountLabel}</p>
+          </div>
+          <div className="px-4 py-1 text-center">
+            <p className="text-[10px] font-medium text-zinc-400">과제 제출률</p>
+            <p className="mt-0.5 text-xl font-bold text-zinc-900">{submitRate}%</p>
+            <p className="mt-0.5 text-[10px] text-emerald-600">{submitDeltaLabel}</p>
+          </div>
+          <div className="px-4 py-1 text-center">
+            <p className="text-[10px] font-medium text-zinc-400">첨삭 완료</p>
+            <p className="mt-0.5 text-xl font-bold text-zinc-900">{reviewedCount}건</p>
+            <p className="mt-0.5 text-[10px] text-zinc-400">이번달</p>
+          </div>
+          <div className="px-4 py-1 text-center last:pr-2">
+            <p className="text-[10px] font-medium text-indigo-400">종합 성장점수</p>
+            <p className="mt-0.5 text-xl font-bold text-indigo-700">{growthScore ?? "−"}</p>
+            <p className="mt-0.5 text-[10px] text-emerald-600">{growthDeltaLabel}</p>
+          </div>
+        </div>
+      </Card>
 
       <div className="print-grid grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card className="p-4" data-no-print>
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-zinc-900">이번 주 미니 알림 미리보기</h3>
-            <button
-              type="button"
-              data-no-print
-              onClick={() => {
-                if (isEditing) {
-                  setToastMessage("알림 문장이 저장되었습니다.");
-                  window.setTimeout(() => setToastMessage(null), 1800);
-                }
-                setIsEditing((prev) => !prev);
-              }}
-              className="rounded-md border border-zinc-200 px-2 py-1 text-xs text-zinc-600 hover:bg-zinc-50"
-            >
-              {isEditing ? "저장" : "수정"}
-            </button>
+            {isEditing ? (
+              <form
+                action={onSaveAlertDraft}
+                data-no-print
+              >
+                <input type="hidden" name="parentId" value={selectedParentId} />
+                {alertDraft.map((line, i) => (
+                  <input key={i} type="hidden" name="alertLine" value={line} />
+                ))}
+                <button
+                  type="submit"
+                  className="rounded-md border border-indigo-300 bg-indigo-50 px-2 py-1 text-xs text-indigo-700 hover:bg-indigo-100"
+                >
+                  저장
+                </button>
+              </form>
+            ) : (
+              <button
+                type="button"
+                data-no-print
+                onClick={() => setIsEditing(true)}
+                className="rounded-md border border-zinc-200 px-2 py-1 text-xs text-zinc-600 hover:bg-zinc-50"
+              >
+                수정
+              </button>
+            )}
           </div>
           <div className="space-y-2">
             {alertDraft.map((line, index) => {
@@ -243,19 +293,53 @@ export default function ReportsClient({
           </div>
         </Card>
 
-        <Card className="print-right-only p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-zinc-900">월간 종합 리포트 — {currentMonthLabel}</h3>
-            <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600">강사 최종 검토 전</span>
+        <Card className="print-right-only p-5">
+          {/* 헤더 */}
+          <div className="mb-4 flex items-start justify-between">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-400">월간 종합 리포트</p>
+              <p className="mt-0.5 text-base font-bold text-zinc-900">{currentMonthLabel}</p>
+            </div>
+            <span className="mt-0.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[10px] font-medium text-amber-600">
+              강사 최종 검토 전
+            </span>
           </div>
-          <div className="space-y-2 text-sm text-zinc-700">
+
+          {/* 지표 2×2 그리드 */}
+          <div className="mb-4 grid grid-cols-2 gap-2.5">
+            <div className="rounded-xl bg-zinc-50 p-3">
+              <p className="text-[10px] font-medium text-zinc-400">이번달 출석률</p>
+              <p className="mt-1 text-2xl font-bold text-zinc-900">{attendanceRate}%</p>
+              <p className="mt-0.5 text-[10px] text-zinc-400">{attendanceCountLabel}</p>
+            </div>
+            <div className="rounded-xl bg-zinc-50 p-3">
+              <p className="text-[10px] font-medium text-zinc-400">과제 제출률</p>
+              <p className="mt-1 text-2xl font-bold text-zinc-900">{submitRate}%</p>
+              <p className="mt-0.5 text-[10px] text-emerald-600">{submitDeltaLabel}</p>
+            </div>
+            <div className="rounded-xl bg-zinc-50 p-3">
+              <p className="text-[10px] font-medium text-zinc-400">첨삭 완료</p>
+              <p className="mt-1 text-2xl font-bold text-zinc-900">{reviewedCount}건</p>
+              <p className="mt-0.5 text-[10px] text-zinc-400">이번달</p>
+            </div>
+            <div className="rounded-xl bg-indigo-50 p-3">
+              <p className="text-[10px] font-medium text-indigo-400">종합 성장점수</p>
+              <p className="mt-1 text-2xl font-bold text-indigo-700">{growthScore ?? "−"}</p>
+              <p className="mt-0.5 text-[10px] text-emerald-600">{growthDeltaLabel}</p>
+            </div>
+          </div>
+
+          {/* 서술 요약 */}
+          <div className="rounded-xl border border-zinc-100 bg-zinc-50 p-3.5 space-y-1.5">
             {monthlyReportLines.map((line, index) => (
-              <p key={index}>{line}</p>
+              <p key={index} className="text-[11px] leading-relaxed text-zinc-600">{line}</p>
             ))}
           </div>
-          <div className="mt-4 flex flex-wrap gap-1.5">
+
+          {/* 칩 */}
+          <div className="mt-3.5 flex flex-wrap gap-1.5">
             {["출석", "과제 제출", "첨삭 완료", "리포트 발행"].map((chip) => (
-              <span key={chip} className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs text-indigo-700">
+              <span key={chip} className="rounded-full bg-indigo-100 px-2.5 py-0.5 text-[10px] font-medium text-indigo-700">
                 {chip}
               </span>
             ))}

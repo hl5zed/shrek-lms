@@ -1,7 +1,11 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import { getClasses, searchClasses } from "@/lib/lms/queries/classes";
+import { adminSupabase, assertAdminSupabaseEnv } from "@/lib/supabase/admin";
+import DeleteClassButton from "@/components/admin/DeleteClassButton";
 
 // 관리자 반 목록
 export default async function AdminClassesPage({
@@ -9,6 +13,20 @@ export default async function AdminClassesPage({
 }: {
   searchParams: Promise<{ q?: string }>;
 }) {
+  assertAdminSupabaseEnv();
+
+  async function deleteClass(formData: FormData) {
+    "use server";
+    assertAdminSupabaseEnv();
+    const classId = formData.get("classId") as string;
+    if (!classId) return;
+    try {
+      await adminSupabase.from("classes").delete().eq("id", classId);
+    } catch { /* 에러 무시 */ }
+    revalidatePath("/admin/classes");
+    redirect("/admin/classes");
+  }
+
   const { q } = await searchParams;
   const classes = q ? await searchClasses({ query: q }) : await getClasses();
 
@@ -59,8 +77,8 @@ export default async function AdminClassesPage({
           {classes.map((cls) => (
             <li key={cls.id}>
               <Card className="transition hover:border-[var(--color-primary-200)]">
-                <Link href={`/admin/classes/${cls.id}`} className="flex items-center justify-between p-4">
-                  <div>
+                <div className="flex items-center justify-between gap-3 p-4">
+                  <Link href={`/admin/classes/${cls.id}`} className="min-w-0 flex-1">
                     <p className="text-sm font-semibold text-zinc-900">{cls.name}</p>
                     <p className="mt-0.5 text-xs text-zinc-400">
                       담당: {cls.teacherName ?? "미배정"} · 학생 {cls.studentCount}명
@@ -68,9 +86,21 @@ export default async function AdminClassesPage({
                     {cls.description ? (
                       <p className="mt-1 text-xs text-zinc-500">{cls.description}</p>
                     ) : null}
+                  </Link>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <Link
+                      href={`/admin/classes/${cls.id}`}
+                      className="text-xs font-medium text-blue-600 hover:underline"
+                    >
+                      상세 보기 →
+                    </Link>
+                    <DeleteClassButton
+                      action={deleteClass}
+                      classId={cls.id}
+                      className={cls.name}
+                    />
                   </div>
-                  <span className="text-xs font-medium text-blue-600">상세 보기 →</span>
-                </Link>
+                </div>
               </Card>
             </li>
           ))}

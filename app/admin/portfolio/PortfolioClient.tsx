@@ -99,7 +99,7 @@ export default function PortfolioClient({
     <div className="space-y-4">
       <style>{`
         @media print {
-          header, nav, [data-no-print] { display: none !important; }
+          header, nav, aside, [data-no-print] { display: none !important; }
           body { background: white !important; }
         }
       `}</style>
@@ -186,28 +186,30 @@ export default function PortfolioClient({
         ) : null}
       </Card>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-        <Card className="p-4">
-          <p className="text-xs text-zinc-500">제출 총 편수</p>
-          <p className="mt-1 text-3xl font-bold text-zinc-900">{totalSubmissions}</p>
-          <p className="mt-1 text-xs text-emerald-600">{Math.max(totalSubmissions - reviewedCount, 0)}편 진행 중</p>
-        </Card>
-        <Card className="p-4">
-          <p className="text-xs text-zinc-500">첨삭 완료</p>
-          <p className="mt-1 text-3xl font-bold text-zinc-900">{reviewedCount}</p>
-          <p className="mt-1 text-xs text-emerald-600">완료율 {completionRate}%</p>
-        </Card>
-        <Card className="p-4">
-          <p className="text-xs text-zinc-500">수정 제출</p>
-          <p className="mt-1 text-3xl font-bold text-zinc-900">{revisedCount}</p>
-          <p className="mt-1 text-xs text-amber-600">{revisedRate}% 재제출</p>
-        </Card>
-        <Card className="p-4">
-          <p className="text-xs text-zinc-500">종합 성장점수</p>
-          <p className="mt-1 text-3xl font-bold text-indigo-700">{growthScore ?? "-"}</p>
-          <p className="mt-1 text-xs text-emerald-600">{growthDeltaLabel}</p>
-        </Card>
-      </div>
+      <Card className="p-3">
+        <div className="grid grid-cols-4 divide-x divide-zinc-100">
+          <div className="px-4 py-1 text-center first:pl-2">
+            <p className="text-[10px] font-medium text-zinc-400">제출 총 편수</p>
+            <p className="mt-0.5 text-xl font-bold text-zinc-900">{totalSubmissions}</p>
+            <p className="mt-0.5 text-[10px] text-emerald-600">{Math.max(totalSubmissions - reviewedCount, 0)}편 진행 중</p>
+          </div>
+          <div className="px-4 py-1 text-center">
+            <p className="text-[10px] font-medium text-zinc-400">첨삭 완료</p>
+            <p className="mt-0.5 text-xl font-bold text-zinc-900">{reviewedCount}</p>
+            <p className="mt-0.5 text-[10px] text-emerald-600">완료율 {completionRate}%</p>
+          </div>
+          <div className="px-4 py-1 text-center">
+            <p className="text-[10px] font-medium text-zinc-400">수정 제출</p>
+            <p className="mt-0.5 text-xl font-bold text-zinc-900">{revisedCount}</p>
+            <p className="mt-0.5 text-[10px] text-amber-600">{revisedRate}% 재제출</p>
+          </div>
+          <div className="px-4 py-1 text-center last:pr-2">
+            <p className="text-[10px] font-medium text-indigo-400">종합 성장점수</p>
+            <p className="mt-0.5 text-xl font-bold text-indigo-700">{growthScore ?? "−"}</p>
+            <p className="mt-0.5 text-[10px] text-emerald-600">{growthDeltaLabel}</p>
+          </div>
+        </div>
+      </Card>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card className="p-4">

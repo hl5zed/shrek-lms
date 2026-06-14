@@ -30,18 +30,22 @@ async function sendWeeklyAlert(formData: FormData) {
   "use server";
   await requireAdmin();
   assertAdminSupabaseEnv();
-  const parentId   = formData.get("parentId")   as string;
+  const parentId    = formData.get("parentId")    as string;
   const studentName = formData.get("studentName") as string;
+  const alertLines  = (formData.getAll("alertLine") as string[]).filter(Boolean);
 
-  // 실제 이메일 발송 연동 전까지는 notifications 테이블에 로그 기록
-  // (테이블 없으면 에러 무시 — 리다이렉트는 항상 실행)
+  const message =
+    alertLines.length > 0
+      ? alertLines.join("\n")
+      : `${studentName} 학생의 주간 알림이 발송되었습니다.`;
+
   try {
     await adminSupabase
       .from("notifications")
       .insert({
         recipient_id: parentId,
         type: "weekly_alert",
-        message: `${studentName} 학생의 주간 알림이 발송되었습니다.`,
+        message,
         is_read: false,
       });
   } catch {
@@ -52,14 +56,44 @@ async function sendWeeklyAlert(formData: FormData) {
   redirect(`/admin/reports?parentId=${parentId}&status=sent`);
 }
 
+async function saveAlertDraft(formData: FormData) {
+  "use server";
+  await requireAdmin();
+  assertAdminSupabaseEnv();
+  const parentId   = formData.get("parentId") as string;
+  const alertLines = (formData.getAll("alertLine") as string[]).filter(Boolean);
+
+  try {
+    await adminSupabase
+      .from("notifications")
+      .delete()
+      .eq("recipient_id", parentId)
+      .eq("type", "mini_alert_draft");
+
+    await adminSupabase
+      .from("notifications")
+      .insert({
+        recipient_id: parentId,
+        type: "mini_alert_draft",
+        message: JSON.stringify(alertLines),
+        is_read: true,
+      });
+  } catch {
+    // 에러 무시
+  }
+
+  revalidatePath("/admin/reports");
+  redirect(`/admin/reports?parentId=${parentId}&status=draft_saved`);
+}
+
 // ───── Page ─────
 export default async function AdminReportsPage({
   searchParams,
 }: {
-  searchParams: { parentId?: string; status?: string };
+  searchParams: Promise<{ parentId?: string; status?: string }>;
 }) {
   assertAdminSupabaseEnv();
-  const { parentId, status } = searchParams;
+  const { parentId, status } = await searchParams;
 
   // 1. 학부모 목록 조회
   const { data: parents } = await adminSupabase
@@ -282,6 +316,27 @@ export default async function AdminReportsPage({
         ? `종합 성장점수는 ${growthScore}점으로, 전월 대비 ${growthDelta >= 0 ? "+" : ""}${growthDelta}점 변동하였습니다.`
         : "성장점수 산출을 위한 평가 데이터가 아직 없습니다.",
     ];
+
+    // 저장된 미니 알림 초안 불러오기 (있으면 우선 적용)
+    try {
+      const { data: draftRow } = await adminSupabase
+        .from("notifications")
+        .select("message")
+        .eq("recipient_id", selected?.parentId ?? "")
+        .eq("type", "mini_alert_draft")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (draftRow?.message) {
+        const parsed = JSON.parse(draftRow.message) as unknown;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          miniAlerts = parsed as string[];
+        }
+      }
+    } catch {
+      // 초안 없으면 기존 miniAlerts 유지
+    }
   } else {
     miniAlerts         = ["📋 좌측 드롭다운에서 학부모를 선택해 주세요."];
     monthlyReportLines = ["등록된 학부모 또는 연결된 학생 데이터가 없습니다."];
@@ -309,6 +364,7 @@ export default async function AdminReportsPage({
       monthlyReportLines={monthlyReportLines}
       currentMonthLabel={monthLabel(new Date())}
       onSendWeeklyAlert={sendWeeklyAlert}
+      onSaveAlertDraft={saveAlertDraft}
     />
   );
 }

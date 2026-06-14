@@ -1,9 +1,40 @@
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import AdminDashboardContent from "@/components/admin/AdminDashboardContent";
+import { adminSupabase, assertAdminSupabaseEnv } from "@/lib/supabase/admin";
 
 // 관리자 대시보드 — 인증/역할 검증은 app/admin/layout.tsx 에서 처리합니다.
-export default async function AdminDashboardPage() {
+export default async function AdminDashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string }>;
+}) {
+  assertAdminSupabaseEnv();
+  const { status } = await searchParams;
   const supabase = await createClient();
+
+  async function sendStudentAlert(formData: FormData) {
+    "use server";
+    assertAdminSupabaseEnv();
+    const studentId = formData.get("studentId") as string;
+    const message   = (formData.get("message") as string).trim();
+    if (!studentId || !message) {
+      redirect("/admin/dashboard?status=alert_error");
+    }
+    try {
+      await adminSupabase.from("notifications").insert({
+        recipient_id: studentId,
+        type: "student_alert",
+        message,
+        is_read: false,
+      });
+    } catch {
+      // 에러 무시
+    }
+    revalidatePath("/admin/dashboard");
+    redirect("/admin/dashboard?status=student_sent");
+  }
 
   const [{ count: studentCountRaw }, { count: pendingFeedbackCountRaw }] = await Promise.all([
     supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "student"),
@@ -56,11 +87,12 @@ export default async function AdminDashboardPage() {
     .order("submitted_at", { ascending: true })
     .limit(4);
 
+  const nowMs = now.getTime();
   const pendingFeedbackItems = (pendingRows ?? []).map((row) => {
     const submittedAtRaw = row.submitted_at;
     const submittedAt = submittedAtRaw ? new Date(submittedAtRaw) : null;
     const elapsedHours = submittedAt
-      ? Math.max(0, Math.floor((Date.now() - submittedAt.getTime()) / (1000 * 60 * 60)))
+      ? Math.max(0, Math.floor((nowMs - submittedAt.getTime()) / (1000 * 60 * 60)))
       : 0;
     const urgency: "일반" | "높음" = elapsedHours >= 24 ? "높음" : "일반";
     return {
@@ -74,14 +106,75 @@ export default async function AdminDashboardPage() {
     };
   });
 
+  // 알림 발송용 학생 목록
+  const { data: studentProfiles } = await adminSupabase
+    .from("profiles")
+    .select("id, name")
+    .eq("role", "student")
+    .order("name");
+  const students = (studentProfiles ?? []) as Array<{ id: string; name: string | null }>;
+
   return (
-    <AdminDashboardContent
-      data={{
-        studentCount,
-        pendingFeedbackCount,
-        weeklySubmissionRate,
-        pendingFeedbackItems,
-      }}
-    />
+    <>
+      <AdminDashboardContent
+        data={{
+          studentCount,
+          pendingFeedbackCount,
+          weeklySubmissionRate,
+          pendingFeedbackItems,
+        }}
+      />
+
+      {/* 학생 알림 발송 */}
+      <div className="mt-8 rounded-2xl border border-zinc-200 bg-white p-6">
+        <h2 className="mb-1 text-base font-bold text-zinc-900">학생 알림 발송</h2>
+        <p className="mb-4 text-xs text-zinc-500">선택한 학생의 대시보드에 알림을 전송합니다.</p>
+
+        {status === "student_sent" && (
+          <p className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+            ✅ 알림이 발송되었습니다.
+          </p>
+        )}
+        {status === "alert_error" && (
+          <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            학생과 메시지를 모두 입력해주세요.
+          </p>
+        )}
+
+        <form action={sendStudentAlert} className="space-y-3">
+          <div>
+            <label className="mb-1 block text-xs font-medium text-zinc-600">학생 선택</label>
+            <select
+              name="studentId"
+              required
+              className="h-10 w-full rounded-lg border border-zinc-200 px-3 text-sm outline-none focus:border-indigo-400"
+            >
+              <option value="">-- 학생을 선택하세요 --</option>
+              {students.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name ?? "이름 없음"}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-zinc-600">알림 메시지</label>
+            <textarea
+              name="message"
+              required
+              rows={3}
+              placeholder="학생에게 전달할 내용을 입력하세요"
+              className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-indigo-400 resize-none"
+            />
+          </div>
+          <button
+            type="submit"
+            className="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+          >
+            알림 발송
+          </button>
+        </form>
+      </div>
+    </>
   );
 }

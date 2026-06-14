@@ -8,6 +8,7 @@ type StudentHeaderProps = {
   studentName?: string;
   studentEmail?: string;
   showGreeting?: boolean;
+  notificationCount?: number;
 };
 
 export default function StudentHeader({
@@ -16,6 +17,7 @@ export default function StudentHeader({
   studentName = "학생",
   studentEmail = "",
   showGreeting = false,
+  notificationCount = 0,
 }: StudentHeaderProps) {
   return (
     <header className="sticky top-0 z-20 border-b border-[#EAEDFA] bg-white/95 px-4 py-3 backdrop-blur">
@@ -41,8 +43,16 @@ export default function StudentHeader({
             )}
           </div>
           <div className="ml-2 flex shrink-0 items-center gap-1">
-            <button type="button" className="rounded-md p-1 text-[#4A55A8] hover:bg-[#F5F7FF]">
+            <button
+              type="button"
+              className="relative rounded-md p-1 text-[#4A55A8] hover:bg-[#F5F7FF]"
+            >
               <IconBell size={18} />
+              {notificationCount > 0 && (
+                <span className="absolute right-0.5 top-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold leading-none text-white">
+                  {notificationCount > 9 ? "9+" : notificationCount}
+                </span>
+              )}
             </button>
             <StudentLogoutButton />
           </div>
