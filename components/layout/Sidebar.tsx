@@ -136,63 +136,88 @@ export default function Sidebar({
 
   if (role === "admin") {
     const items = getAdminNavItems(studentNewCount, pendingFeedbackCount);
+
+    const GROUP_STYLES: Record<string, { label: string; active: string; inactive: string }> = {
+      "운영 관리": {
+        label: "text-blue-500",
+        active: "bg-blue-50 text-blue-700 font-semibold",
+        inactive: "text-zinc-600 hover:bg-blue-50/70 hover:text-blue-700",
+      },
+      "강의 콘텐츠": {
+        label: "text-violet-500",
+        active: "bg-violet-50 text-violet-700 font-semibold",
+        inactive: "text-zinc-600 hover:bg-violet-50/70 hover:text-violet-700",
+      },
+      "첨삭 & 성장": {
+        label: "text-emerald-500",
+        active: "bg-emerald-50 text-emerald-700 font-semibold",
+        inactive: "text-zinc-600 hover:bg-emerald-50/70 hover:text-emerald-700",
+      },
+      "기타": {
+        label: "text-zinc-400",
+        active: "bg-zinc-100 text-zinc-800 font-semibold",
+        inactive: "text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700",
+      },
+    };
+
     return (
-      <aside className="flex h-screen w-36 shrink-0 flex-col border-r border-zinc-200 bg-white">
-        <div className="border-b border-zinc-200 px-2.5 pb-2.5 pt-3">
-          <div className="flex items-center gap-1.5">
+      <aside className="flex h-screen w-48 shrink-0 flex-col border-r border-zinc-200 bg-white">
+        <div className="border-b border-zinc-200 px-3 pb-3 pt-3.5">
+          <div className="flex items-center gap-2">
             <Image
               src="/shrek-s.png"
               alt="슈렉샘"
-              width={26}
-              height={26}
+              width={30}
+              height={30}
               className="rounded-lg object-contain"
             />
             <div>
-              <p className="text-[11px] font-bold leading-tight text-zinc-900">슈렉샘 LMS</p>
-              <p className="text-[9px] leading-tight text-zinc-400">논술 성장관리</p>
+              <p className="text-[13px] font-bold leading-tight text-zinc-900">슈렉샘 LMS</p>
+              <p className="text-[10px] leading-tight text-zinc-400">논술 성장관리 플랫폼</p>
             </div>
           </div>
         </div>
 
-        <nav className="flex min-h-0 flex-1 flex-col overflow-y-auto px-1.5 py-2">
-          {ADMIN_GROUPS.map((group) => (
-            <div key={group} className="mb-0.5">
-              <p className="px-1 pb-0.5 pt-2.5 text-[9px] font-semibold uppercase tracking-wide text-zinc-400 first:pt-1.5">
-                {group}
-              </p>
-              <div className="space-y-0.5">
-                {items
-                  .filter((item) => item.group === group)
-                  .map((item) => {
-                    const isActive = isActivePath(currentPath, item.href);
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        className={`flex items-center gap-1 rounded-lg px-2 py-[5px] text-[11px] transition ${
-                          isActive
-                            ? "bg-indigo-50 font-semibold text-indigo-600"
-                            : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900"
-                        }`}
-                      >
-                        <span className="truncate">{item.label}</span>
-                        {renderBadge(item.badge)}
-                      </Link>
-                    );
-                  })}
+        <nav className="flex min-h-0 flex-1 flex-col overflow-y-auto px-2 py-2">
+          {ADMIN_GROUPS.map((group) => {
+            const gStyle = GROUP_STYLES[group] ?? GROUP_STYLES["기타"];
+            return (
+              <div key={group} className="mb-1">
+                <p className={`px-1.5 pb-1 pt-3 text-[10px] font-bold uppercase tracking-wider first:pt-1.5 ${gStyle.label}`}>
+                  {group}
+                </p>
+                <div className="space-y-0.5">
+                  {items
+                    .filter((item) => item.group === group)
+                    .map((item) => {
+                      const isActive = isActivePath(currentPath, item.href);
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          className={`flex items-center gap-1.5 rounded-lg px-3 py-[7px] text-[13px] transition-all duration-150 ${
+                            isActive ? gStyle.active : gStyle.inactive
+                          }`}
+                        >
+                          <span className="truncate">{item.label}</span>
+                          {renderBadge(item.badge)}
+                        </Link>
+                      );
+                    })}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </nav>
 
-        <div className="border-t border-zinc-200 px-2 py-2">
-          <div className="mb-1.5 flex items-center gap-1.5">
-            <div className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full bg-indigo-50 text-[10px] font-bold text-indigo-600">
+        <div className="border-t border-zinc-200 px-3 py-2.5">
+          <div className="mb-1.5 flex items-center gap-2">
+            <div className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-indigo-50 text-[11px] font-bold text-indigo-600">
               {initial}
             </div>
             <div className="min-w-0">
-              <p className="truncate text-[10px] font-bold text-zinc-900">{name}</p>
-              <p className="text-[9px] text-zinc-400">{ROLE_LABEL[role] ?? role}</p>
+              <p className="truncate text-[11.5px] font-bold text-zinc-900">{name}</p>
+              <p className="text-[10px] text-zinc-400">{ROLE_LABEL[role] ?? role}</p>
             </div>
           </div>
           <LogoutButton />
