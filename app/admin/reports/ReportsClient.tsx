@@ -187,6 +187,7 @@ export default function ReportsClient({
             </div>
             <div>
               <p className="text-sm font-semibold text-zinc-900">{selectedParentName} 학부모님</p>
+              <p className="mt-0.5 text-xs font-medium text-indigo-600">학생: {studentName}</p>
               <p className="mt-0.5 text-xs text-zinc-500">{className} · 담당: {teacherName}님 · 수강 {monthDiff}개월째</p>
             </div>
           </div>

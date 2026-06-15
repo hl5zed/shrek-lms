@@ -104,14 +104,27 @@ export default async function AdminReportsPage({
     .eq("role", "parent")
     .order("name");
 
-  // 2. 학부모-학생 연결 목록
+  // 2. 학부모-학생 연결 목록 (join 없이 직접 컬럼만 조회)
   const parentIds = (parents ?? []).map((p) => p.id);
   const { data: linkRows } = parentIds.length
     ? await adminSupabase
         .from("parent_students")
-        .select("parent_id, student_id, profiles!student_id ( id, name, created_at )")
+        .select("parent_id, student_id")
         .in("parent_id", parentIds)
-    : { data: [] };
+    : { data: [] as Array<{ parent_id: string; student_id: string }> };
+
+  // 학생 프로필을 별도 쿼리로 조회 (join 모호성 완전 제거)
+  const studentIds = (linkRows ?? []).map((l) => l.student_id).filter(Boolean);
+  const { data: studentProfiles } = studentIds.length
+    ? await adminSupabase
+        .from("profiles")
+        .select("id, name, created_at")
+        .in("id", studentIds)
+    : { data: [] as Array<{ id: string; name: string; created_at: string }> };
+
+  const studentProfileMap = new Map(
+    (studentProfiles ?? []).map((s) => [s.id, s]),
+  );
 
   // 3. parentOptions 조립
   const parentOptions: ParentReportOption[] = [];
@@ -128,15 +141,14 @@ export default async function AdminReportsPage({
       });
     } else {
       for (const link of links) {
-        // Supabase join 결과는 배열 또는 단일 객체일 수 있음
-        const stu = Array.isArray(link.profiles) ? link.profiles[0] : link.profiles;
+        const stu = studentProfileMap.get(link.student_id);
         parentOptions.push({
           parentId: p.id,
           parentName: p.name ?? "이름 없음",
           parentEmail: p.email ?? "",
-          studentId: (link as { student_id?: string }).student_id ?? stu?.id ?? "",
-          studentName: (stu as { name?: string } | null)?.name ?? "이름 없음",
-          studentCreatedAt: (stu as { created_at?: string } | null)?.created_at ?? null,
+          studentId: link.student_id,
+          studentName: stu?.name ?? "이름 없음",
+          studentCreatedAt: stu?.created_at ?? null,
         });
       }
     }
