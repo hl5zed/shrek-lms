@@ -18,3 +18,5 @@ _backup_shrek-lms/
 playwright-report/
 test-results/
 next-env.d.ts
+
+create_oci_key.py
