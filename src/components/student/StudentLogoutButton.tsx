@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { IconLoader2, IconLogout2 } from "@tabler/icons-react";
+import { Loader2, LogOut } from "lucide-react";
 import { logoutWithRedirect } from "@/lib/auth/logout";
 
 export default function StudentLogoutButton() {
@@ -24,7 +24,7 @@ export default function StudentLogoutButton() {
       title={isLoading ? "로그아웃 중..." : "로그아웃"}
       className="rounded-md p-1 text-[#4A55A8] hover:bg-[#F5F7FF] disabled:cursor-not-allowed disabled:opacity-60"
     >
-      {isLoading ? <IconLoader2 size={18} className="animate-spin" /> : <IconLogout2 size={18} />}
+      {isLoading ? <Loader2 size={18} className="animate-spin" /> : <LogOut size={18} />}
     </button>
   );
 }

@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { IconBook, IconChecklist, IconChartLine, IconMessageCircle } from "@tabler/icons-react";
+import { BookOpen, ClipboardList, TrendingUp, MessageCircle } from "lucide-react";
 
 const items = [
-  { href: "/student", label: "홈", icon: IconBook },
-  { href: "/student/courses", label: "강의", icon: IconBook },
-  { href: "/student/assignments", label: "과제", icon: IconChecklist },
-  { href: "/student/feedback", label: "첨삭", icon: IconMessageCircle },
-  { href: "/student/growth", label: "성장", icon: IconChartLine },
+  { href: "/student", label: "홈", icon: BookOpen },
+  { href: "/student/courses", label: "강의", icon: BookOpen },
+  { href: "/student/assignments", label: "과제", icon: ClipboardList },
+  { href: "/student/feedback", label: "첨삭", icon: MessageCircle },
+  { href: "/student/growth", label: "성장", icon: TrendingUp },
 ];
 
 function resolveActiveHref(pathname: string): string {

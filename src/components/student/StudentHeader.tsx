@@ -1,4 +1,4 @@
-import { IconBell, IconChevronLeft } from "@tabler/icons-react";
+import { Bell, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import StudentLogoutButton from "./StudentLogoutButton";
 
@@ -26,7 +26,7 @@ export default function StudentHeader({
           <div className="flex min-w-0 items-center gap-2">
             {backHref ? (
               <Link href={backHref} className="rounded-md p-1 text-[#4A55A8] hover:bg-[#F5F7FF]">
-                <IconChevronLeft size={18} />
+                <ChevronLeft size={18} />
               </Link>
             ) : null}
             {showGreeting ? (
@@ -47,7 +47,7 @@ export default function StudentHeader({
               type="button"
               className="relative rounded-md p-1 text-[#4A55A8] hover:bg-[#F5F7FF]"
             >
-              <IconBell size={18} />
+              <Bell size={18} />
               {notificationCount > 0 && (
                 <span className="absolute right-0.5 top-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold leading-none text-white">
                   {notificationCount > 9 ? "9+" : notificationCount}
