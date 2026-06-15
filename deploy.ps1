@@ -1,19 +1,19 @@
-# deploy.ps1 — 논술마루 LMS 원클릭 배포 스크립트
-# 사용법: PowerShell에서 .\deploy.ps1 또는 .\deploy.ps1 "커밋 메시지"
+﻿# deploy.ps1 - LMS 원클릭 배포 스크립트
+# 사용법: .\deploy.ps1 또는 .\deploy.ps1 "커밋 메시지"
 
 param(
     [string]$Message = ""
 )
 
-# UTF-8 인코딩 설정 (한글 깨짐 방지)
+# UTF-8 인코딩 설정
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding = [System.Text.Encoding]::UTF8
 chcp 65001 | Out-Null
 
 # 색상 출력 함수
-function Write-Step($text) { Write-Host "`n▶ $text" -ForegroundColor Cyan }
-function Write-OK($text)   { Write-Host "  ✓ $text" -ForegroundColor Green }
-function Write-Fail($text) { Write-Host "  ✗ $text" -ForegroundColor Red; exit 1 }
+function Write-Step($text) { Write-Host "`n>> $text" -ForegroundColor Cyan }
+function Write-OK($text)   { Write-Host "  OK: $text" -ForegroundColor Green }
+function Write-Fail($text) { Write-Host "  FAIL: $text" -ForegroundColor Red; exit 1 }
 
 Set-Location $PSScriptRoot
 
@@ -46,7 +46,7 @@ if ($LASTEXITCODE -ne 0) { Write-Fail "git commit 실패" }
 Write-OK "커밋 완료: $Message"
 
 # 5. git push
-Write-Step "git push → GitHub"
+Write-Step "git push -> GitHub"
 git push origin main
 if ($LASTEXITCODE -ne 0) {
     Write-Host "  main 브랜치 push 실패. 현재 브랜치로 재시도..." -ForegroundColor Yellow
@@ -57,6 +57,6 @@ if ($LASTEXITCODE -ne 0) {
 Write-OK "GitHub push 완료"
 
 # 6. 완료
-Write-Host "`n✅ 배포 트리거 완료!" -ForegroundColor Green
+Write-Host "`n배포 트리거 완료!" -ForegroundColor Green
 Write-Host "   GitHub Actions가 OCI 서버에 자동 배포합니다." -ForegroundColor Gray
-Write-Host "   진행 상황: https://github.com/hl5zend/shrek-lms/actions" -ForegroundColor Gray
+Write-Host "   진행 상황: https://github.com/hl5zed/shrek-lms/actions" -ForegroundColor Gray
