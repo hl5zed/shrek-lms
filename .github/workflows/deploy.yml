@@ -6,52 +6,100 @@ on:
       - main
 
 jobs:
+  # ─── 1단계: GitHub 서버에서 빌드 ───────────────────────────────────────
+  build:
+    name: Next.js 빌드
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Node.js 설정 (npm 캐시 포함)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 환경변수 설정
+        run: |
+          echo "NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}" >> .env.local
+          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" >> .env.local
+          echo "SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" >> .env.local
+
+      - name: 의존성 설치
+        run: npm ci --omit=dev
+
+      - name: Next.js 빌드
+        run: npm run build
+
+      - name: 개발용 캐시 삭제
+        run: rm -rf .next/dev
+
+      - name: 빌드 결과물 업로드 (Actions Artifact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: nextjs-build
+          path: .next/
+          retention-days: 1
+
+  # ─── 2단계: OCI 서버에 전송 및 재시작 ──────────────────────────────────
   deploy:
     name: OCI 서버 배포
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    needs: build
+    timeout-minutes: 10
 
     steps:
-      - name: 배포 시작 알림
-        run: echo "🚀 배포 시작 - $(date '+%Y-%m-%d %H:%M:%S')"
+      - name: 빌드 결과물 다운로드
+        uses: actions/download-artifact@v4
+        with:
+          name: nextjs-build
+          path: .next/
 
-      - name: SSH로 OCI 서버 접속 및 배포
+      - name: SSH 키 설정
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.OCI_SSH_KEY }}" > ~/.ssh/oci_key
+          chmod 600 ~/.ssh/oci_key
+          ssh-keyscan -p 22 ${{ secrets.OCI_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: .next 빌드 결과물 서버로 전송
+        run: |
+          rsync -az --delete \
+            -e "ssh -i ~/.ssh/oci_key -p 22" \
+            .next/ \
+            ${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}:${{ secrets.OCI_APP_DIR }}/.next/
+
+      - name: 소스코드 업데이트 및 서버 재시작
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.OCI_HOST }}
           username: ${{ secrets.OCI_USER }}
           key: ${{ secrets.OCI_SSH_KEY }}
-          port: ${{ secrets.OCI_PORT || 22 }}
+          port: 22
           script: |
-            echo "📋 Node.js 버전 확인"
-            node_version=$(node --version | sed 's/v//' | cut -d. -f1)
-            if [ "$node_version" -lt 18 ]; then
-              echo "❌ Node.js 18 이상 필요. 현재: $(node --version)"
-              exit 1
-            fi
-            echo "✅ Node.js $(node --version) 확인 완료"
-
             set -e
-
-            echo "📁 프로젝트 디렉토리 이동"
             cd ${{ secrets.OCI_APP_DIR }}
 
-            echo "⬇️  최신 코드 pull"
+            echo "⬇️  소스코드 업데이트"
             git fetch origin main
             git reset --hard origin/main
 
-            echo "📦 의존성 설치 (프로덕션 전용)"
-            npm ci --omit=dev
-
-            echo "🔨 Next.js 빌드"
-            npm run build
-
-            echo "🧹 개발용 캐시 삭제"
-            rm -rf .next/dev
+            echo "📦 의존성 확인 (package.json 변경 시에만 재설치)"
+            NEW_HASH=$(md5sum package.json | cut -d' ' -f1)
+            OLD_HASH=$(cat .pkg_hash 2>/dev/null || echo "none")
+            if [ "$NEW_HASH" != "$OLD_HASH" ]; then
+              echo "  → package.json 변경 감지, 재설치 중..."
+              npm ci --omit=dev
+              echo "$NEW_HASH" > .pkg_hash
+            else
+              echo "  → 변경 없음, 설치 생략"
+            fi
 
             echo "🔄 서버 재시작 (PM2)"
             pm2 restart shrek-lms || pm2 start npm --name "shrek-lms" -- start
-
             echo "✅ 배포 완료"
 
       - name: 배포 완료 알림
