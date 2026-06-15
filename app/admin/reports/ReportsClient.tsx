@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import Card from "@/components/ui/Card";
 
 export type ParentReportOption = {
@@ -16,6 +15,7 @@ export type ParentReportOption = {
 type ReportsClientProps = {
   status: string | null;
   selectedParentId: string;
+  selectedStudentId: string;
   selectedParentName: string;
   selectedParentEmail: string;
   studentName: string;
@@ -40,6 +40,7 @@ type ReportsClientProps = {
 export default function ReportsClient({
   status,
   selectedParentId,
+  selectedStudentId,
   selectedParentName,
   selectedParentEmail,
   studentName,
@@ -60,7 +61,6 @@ export default function ReportsClient({
   onSendWeeklyAlert,
   onSaveAlertDraft,
 }: ReportsClientProps) {
-  const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [alertDraft, setAlertDraft] = useState(miniAlerts);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -192,12 +192,15 @@ export default function ReportsClient({
           </div>
           <div className="flex items-center gap-2" data-no-print>
             <select
-              value={selectedParentId}
-              onChange={(event) => router.push(`/admin/reports?parentId=${event.target.value}`)}
+              value={`${selectedParentId}__${selectedStudentId}`}
+              onChange={(event) => {
+                const [pId, sId] = event.target.value.split("__");
+                window.location.href = `/admin/reports?parentId=${pId}&studentId=${sId}`;
+              }}
               className="h-9 rounded-lg border border-zinc-200 px-3 text-sm outline-none focus:border-indigo-400"
             >
               {parentOptions.map((option) => (
-                <option key={`${option.parentId}-${option.studentId}`} value={option.parentId}>
+                <option key={`${option.parentId}-${option.studentId}`} value={`${option.parentId}__${option.studentId}`}>
                   {option.parentName} · {option.studentName}
                 </option>
               ))}

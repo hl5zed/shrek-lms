@@ -4,6 +4,8 @@ import { adminSupabase, assertAdminSupabaseEnv } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import ReportsClient, { type ParentReportOption } from "./ReportsClient";
 
+export const dynamic = "force-dynamic";
+
 // ───── 유틸 ─────
 function monthLabel(d: Date) {
   return `${d.getFullYear()}년 ${d.getMonth() + 1}월`;
@@ -90,10 +92,10 @@ async function saveAlertDraft(formData: FormData) {
 export default async function AdminReportsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ parentId?: string; status?: string }>;
+  searchParams: Promise<{ parentId?: string; studentId?: string; status?: string }>;
 }) {
   assertAdminSupabaseEnv();
-  const { parentId, status } = await searchParams;
+  const { parentId, studentId: studentIdParam, status } = await searchParams;
 
   // 1. 학부모 목록 조회
   const { data: parents } = await adminSupabase
@@ -132,7 +134,7 @@ export default async function AdminReportsPage({
           parentId: p.id,
           parentName: p.name ?? "이름 없음",
           parentEmail: p.email ?? "",
-          studentId: stu?.id ?? "",
+          studentId: (link as { student_id?: string }).student_id ?? stu?.id ?? "",
           studentName: (stu as { name?: string } | null)?.name ?? "이름 없음",
           studentCreatedAt: (stu as { created_at?: string } | null)?.created_at ?? null,
         });
@@ -141,8 +143,15 @@ export default async function AdminReportsPage({
   }
 
   // 4. 선택된 학부모 결정
-  const selected = parentOptions.find((o) => o.parentId === parentId) ?? parentOptions[0] ?? null;
-  const studentId = selected?.studentId ?? "";
+  const selected =
+    (parentId && studentIdParam
+      ? (parentOptions.find((o) => o.parentId === parentId && o.studentId === studentIdParam)
+          ?? parentOptions.find((o) => o.studentId === studentIdParam))
+      : parentOptions.find((o) => o.parentId === parentId))
+    ?? parentOptions[0]
+    ?? null;
+  // URL에 studentId가 직접 있으면 그것을 우선 사용 (selected.find 실패 방어)
+  const studentId = studentIdParam || selected?.studentId || "";
 
   // ── 기본값 ──
   let attendanceRate       = 0;
@@ -346,6 +355,7 @@ export default async function AdminReportsPage({
     <ReportsClient
       status={status ?? null}
       selectedParentId={selected?.parentId ?? ""}
+      selectedStudentId={selected?.studentId ?? ""}
       selectedParentName={selected?.parentName ?? ""}
       selectedParentEmail={selected?.parentEmail ?? ""}
       studentName={selected?.studentName ?? ""}

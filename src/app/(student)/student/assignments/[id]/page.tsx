@@ -1,12 +1,7 @@
-import { notFound } from "next/navigation";
-import StudentShell from "@/src/components/student/StudentShell";
-import StudentCard from "@/src/components/student/StudentCard";
-import RowItem from "@/src/components/student/RowItem";
-import StatusBadge from "@/src/components/student/StatusBadge";
-import EssayTextarea from "@/src/components/student/EssayTextarea";
-import ImageUploadZone from "@/src/components/student/ImageUploadZone";
-import SubmitTypeSelector from "@/src/components/student/SubmitTypeSelector";
-import { studentData } from "@/src/lib/mock/studentData";
+import { notFound, redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import AssignmentSubmitClient from "@/src/components/student/AssignmentSubmitClient";
+import { submitFileAction, submitTextAction } from "./actions";
 
 export default async function StudentAssignmentDetailPage({
   params,
@@ -14,34 +9,56 @@ export default async function StudentAssignmentDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const assignment = studentData.assignments.find((item) => item.id === id);
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) redirect("/login");
+
+  const { data: assignment } = await supabase
+    .from("assignments")
+    .select("id, title, description, due_date, classes(name)")
+    .eq("id", id)
+    .maybeSingle();
   if (!assignment) notFound();
 
+  const { data: submission } = await supabase
+    .from("submissions")
+    .select("status, content_text, submitted_at")
+    .eq("assignment_id", id)
+    .eq("student_id", user.id)
+    .maybeSingle();
+
+  const classes = assignment.classes as { name?: string } | null;
+  const submittedAtFormatted = submission?.submitted_at
+    ? (() => {
+        const d = new Date(submission.submitted_at);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        const hour = String(d.getHours()).padStart(2, "0");
+        const minute = String(d.getMinutes()).padStart(2, "0");
+        return `${year}-${month}-${day} ${hour}:${minute}`;
+      })()
+    : null;
+
   return (
-    <StudentShell title="과제 상세" backHref="/student/assignments">
-      <StudentCard>
-        <div className="flex items-start justify-between gap-2">
-          <h2 className="text-sm font-semibold text-[#06091F]">{assignment.title}</h2>
-          <StatusBadge status={assignment.status} />
-        </div>
-        <div className="mt-2">
-          <RowItem label="마감일" value={assignment.dueDate} />
-          <RowItem label="제출 상태" value={assignment.status} />
-        </div>
-      </StudentCard>
-
-      <StudentCard>
-        <h3 className="text-sm font-semibold text-[#06091F]">답안 작성</h3>
-        <div className="mt-3">
-          <SubmitTypeSelector />
-        </div>
-        <div className="mt-3">
-          <EssayTextarea />
-        </div>
-      </StudentCard>
-
-      <ImageUploadZone />
-    </StudentShell>
+    <AssignmentSubmitClient
+      assignmentId={assignment.id}
+      title={assignment.title ?? "제목 없음"}
+      description={assignment.description ?? ""}
+      className={classes?.name ?? "반 정보 없음"}
+      dday={assignment.due_date}
+      minLen={300}
+      maxLen={3000}
+      submissionStatus={submission?.status ?? null}
+      initialText={submission?.content_text ?? ""}
+      submittedAtFormatted={submittedAtFormatted}
+      serverStatus={null}
+      textAction={submitTextAction.bind(null, id)}
+      fileAction={submitFileAction.bind(null, id)}
+    />
   );
 }
 
