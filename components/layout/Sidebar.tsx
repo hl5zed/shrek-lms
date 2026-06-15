@@ -137,27 +137,29 @@ export default function Sidebar({
   if (role === "admin") {
     const items = getAdminNavItems(studentNewCount, pendingFeedbackCount);
     return (
-      <aside className="flex h-screen w-60 shrink-0 flex-col border-r border-zinc-200 bg-white">
-        <div className="border-b border-zinc-200 px-[14px] pb-3 pt-3.5">
-          <div className="flex items-center gap-2">
+      <aside className="flex h-screen w-36 shrink-0 flex-col border-r border-zinc-200 bg-white">
+        <div className="border-b border-zinc-200 px-2.5 pb-2.5 pt-3">
+          <div className="flex items-center gap-1.5">
             <Image
               src="/shrek-s.png"
               alt="슈렉샘"
-              width={32}
-              height={32}
+              width={26}
+              height={26}
               className="rounded-lg object-contain"
             />
             <div>
-              <p className="text-[13px] font-bold text-zinc-900">슈렉샘 LMS</p>
-              <p className="text-[10px] text-zinc-400">논술 성장관리 플랫폼</p>
+              <p className="text-[11px] font-bold leading-tight text-zinc-900">슈렉샘 LMS</p>
+              <p className="text-[9px] leading-tight text-zinc-400">논술 성장관리</p>
             </div>
           </div>
         </div>
 
-        <nav className="flex min-h-0 flex-1 flex-col overflow-y-auto px-2 py-2">
+        <nav className="flex min-h-0 flex-1 flex-col overflow-y-auto px-1.5 py-2">
           {ADMIN_GROUPS.map((group) => (
             <div key={group} className="mb-0.5">
-              <p className="px-1 pb-0.5 pt-3 text-[9.5px] font-medium text-zinc-400 first:pt-1.5">{group}</p>
+              <p className="px-1 pb-0.5 pt-2.5 text-[9px] font-semibold uppercase tracking-wide text-zinc-400 first:pt-1.5">
+                {group}
+              </p>
               <div className="space-y-0.5">
                 {items
                   .filter((item) => item.group === group)
@@ -167,10 +169,10 @@ export default function Sidebar({
                       <Link
                         key={item.href}
                         href={item.href}
-                        className={`flex items-center gap-1.5 rounded-lg px-4 py-[7px] text-[13.5px] transition ${
+                        className={`flex items-center gap-1 rounded-lg px-2 py-[5px] text-[11px] transition ${
                           isActive
                             ? "bg-indigo-50 font-semibold text-indigo-600"
-                            : "text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900"
+                            : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900"
                         }`}
                       >
                         <span className="truncate">{item.label}</span>
@@ -183,14 +185,14 @@ export default function Sidebar({
           ))}
         </nav>
 
-        <div className="border-t border-zinc-200 px-3 py-2.5">
-          <div className="flex items-center gap-1.5">
-            <div className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-indigo-50 text-[11px] font-bold text-indigo-600">
+        <div className="border-t border-zinc-200 px-2 py-2">
+          <div className="mb-1.5 flex items-center gap-1.5">
+            <div className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full bg-indigo-50 text-[10px] font-bold text-indigo-600">
               {initial}
             </div>
-            <div>
-              <p className="text-[11px] font-bold text-zinc-900">{name}</p>
-              <p className="text-[10px] text-zinc-400">{ROLE_LABEL[role] ?? role}</p>
+            <div className="min-w-0">
+              <p className="truncate text-[10px] font-bold text-zinc-900">{name}</p>
+              <p className="text-[9px] text-zinc-400">{ROLE_LABEL[role] ?? role}</p>
             </div>
           </div>
           <LogoutButton />

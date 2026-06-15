@@ -126,50 +126,52 @@ export default async function AdminDashboardPage({
       />
 
       {/* 학생 알림 발송 */}
-      <div className="mt-8 rounded-2xl border border-zinc-200 bg-white p-6">
+      <div className="mt-5 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm md:p-6">
         <h2 className="mb-1 text-base font-bold text-zinc-900">학생 알림 발송</h2>
         <p className="mb-4 text-xs text-zinc-500">선택한 학생의 대시보드에 알림을 전송합니다.</p>
 
         {status === "student_sent" && (
-          <p className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+          <p className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
             ✅ 알림이 발송되었습니다.
           </p>
         )}
         {status === "alert_error" && (
-          <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <p className="mb-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
             학생과 메시지를 모두 입력해주세요.
           </p>
         )}
 
         <form action={sendStudentAlert} className="space-y-3">
-          <div>
-            <label className="mb-1 block text-xs font-medium text-zinc-600">학생 선택</label>
-            <select
-              name="studentId"
-              required
-              className="h-10 w-full rounded-lg border border-zinc-200 px-3 text-sm outline-none focus:border-indigo-400"
-            >
-              <option value="">-- 학생을 선택하세요 --</option>
-              {students.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name ?? "이름 없음"}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-medium text-zinc-600">알림 메시지</label>
-            <textarea
-              name="message"
-              required
-              rows={3}
-              placeholder="학생에게 전달할 내용을 입력하세요"
-              className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-indigo-400 resize-none"
-            />
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div>
+              <label className="mb-1 block text-xs font-medium text-zinc-600">학생 선택</label>
+              <select
+                name="studentId"
+                required
+                className="h-10 w-full rounded-xl border border-zinc-200 px-3 text-sm outline-none focus:border-indigo-400"
+              >
+                <option value="">-- 학생을 선택하세요 --</option>
+                {students.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name ?? "이름 없음"}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-zinc-600">알림 메시지</label>
+              <textarea
+                name="message"
+                required
+                rows={2}
+                placeholder="학생에게 전달할 내용을 입력하세요"
+                className="w-full resize-none rounded-xl border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-indigo-400"
+              />
+            </div>
           </div>
           <button
             type="submit"
-            className="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+            className="w-full rounded-xl bg-indigo-600 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 active:scale-[0.98] sm:w-auto sm:px-6"
           >
             알림 발송
           </button>
