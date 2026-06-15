@@ -40,11 +40,14 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
 
-            echo "📦 의존성 설치 (변경 시에만)"
-            npm ci --production=false
+            echo "📦 의존성 설치 (프로덕션 전용)"
+            npm ci --omit=dev
 
             echo "🔨 Next.js 빌드"
             npm run build
+
+            echo "🧹 개발용 캐시 삭제"
+            rm -rf .next/dev
 
             echo "🔄 서버 재시작 (PM2)"
             pm2 restart shrek-lms || pm2 start npm --name "shrek-lms" -- start
