@@ -28,8 +28,8 @@ jobs:
           echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" >> .env.local
           echo "SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" >> .env.local
 
-      - name: 의존성 설치
-        run: npm ci --omit=dev
+      - name: 의존성 설치 (빌드용 전체 설치)
+        run: npm ci
 
       - name: Next.js 빌드
         run: npm run build
