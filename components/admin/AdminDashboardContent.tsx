@@ -36,7 +36,6 @@ export default function AdminDashboardContent({ data }: AdminDashboardContentPro
           </div>
           <Button
             asChild
-            variant="secondary"
             className="w-fit rounded-xl border-0 bg-white/20 px-4 py-2 text-xs font-semibold text-white hover:bg-white/30"
           >
             <Link href="/admin/students/new">+ 학생 추가</Link>
