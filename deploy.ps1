@@ -1,14 +1,14 @@
-# UTF-8 인코딩 설정 (한글 깨짐 방지)
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-$OutputEncoding = [System.Text.Encoding]::UTF8
-chcp 65001 | Out-Null
-
 # deploy.ps1 — 논술마루 LMS 원클릭 배포 스크립트
 # 사용법: PowerShell에서 .\deploy.ps1 또는 .\deploy.ps1 "커밋 메시지"
 
 param(
     [string]$Message = ""
 )
+
+# UTF-8 인코딩 설정 (한글 깨짐 방지)
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
+chcp 65001 | Out-Null
 
 # 색상 출력 함수
 function Write-Step($text) { Write-Host "`n▶ $text" -ForegroundColor Cyan }
